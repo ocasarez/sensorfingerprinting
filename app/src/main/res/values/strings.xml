@@ -1,0 +1,65 @@
+<resources>
+    <string name="app_name">Sensor Fingerprinting</string>
+    <string name="disclaimer_title">Disclaimer</string>
+    <string name="disclaimer_message">
+        <p dir="ltr"><b>Please read the disclaimer before accepting.</b></p>
+        <p dir="ltr">The following application will collect sensor data from your device.</p>
+        <p dir="ltr">This data is for my thesis and is intended for research purposes only.</p>
+    </string>
+    <string name="disclaimer_accept">Accept</string>
+    <string name="features_title">Features</string>
+    <string name="features_sensordata">Sensor Data</string>
+    <string name="features_sensorfingerprint">Sensor Fingerprint</string>
+    <string name="sensordata_title">Sensor Data</string>
+    <string name="sensordata_model">Sensor Model</string>
+    <string name="sensordata_vendor">Sensor Vendor</string>
+    <string name="sensordata_measurementRange">Sensor Measurement Range</string>
+    <string name="sensordata_noise">Sensor Noise</string>
+    <string name="sensordata_resolution">Sensor Resolution</string>
+    <string name="sensordata_placement">Sensor Placement</string>
+    <string name="sensordata_VE3Calibration">Sensor Calibration</string>
+    <string name="sensordata_sampling">Sensor Sampling</string>
+    <string name="sensordata_collectdata">Collect Data</string>
+    <string name="sensordata_stop">Stop</string>
+    <string name="sensordata_start">Start</string>
+    <string name="firstInstruction_traceResultTitle">Trace #1 Result:</string>
+    <string name="firstInstruction_message">
+        <p dir="ltr">1. Place phone face up on a flat surface.</p>
+        <p dir="ltr">2. Press <b>Collect Trace</b>.</p>
+    </string>
+    <string name="firstInstruction_collectTrace">Collect Trace</string>
+    <string name="secondInstructions_traceResultTitle">Trace #2 Result:</string>
+    <string name="trace_3_result">Trace #3 Result:</string>
+    <string name="instructions_title">Instructions</string>
+    <string name="instructions_collectTrace">Collect Trace</string>
+    <string name="instructions_next">Next</string>
+    <string name="instructions_goToSensorFingerprint">Sensor Fingerprint Results</string>
+    <string name="secondInstructions_message">
+        <p dir="ltr">1. Press <b>Collect Trace</b>.</p>
+        <p dir="ltr">2. Place phone face down on a flat surface.</p>
+        <p><b>Note: The phone will vibrate to indicate trace collection is complete.</b></p>
+    </string>
+    <string name="thirdInstructions_message">
+        <p dir="ltr">1. Hold phone vertically.</p>
+        <p dir="ltr">2. Press <b>Collect Trace</b>.</p>
+    </string>
+    <string name="sensorfingerprint_title">Sensor Fingerprint</string>
+    <string name="sensorfingerprint_result">Fingerprint Result: </string>
+    <string name="sensorfingerprint_internalD">Internal ID</string>
+    <string name="sensorfingerprint_dataTime"><![CDATA[Entry Date & Time]]></string>
+    <string name="sensorfingerprint_deviceModel">Device Model</string>
+    <string name="sensorfingerprint_sensorModel">Sensor Model</string>
+    <string name="sensorfingerprint_sensorVender">Sensor Vendor</string>
+    <string name="sensorfingerprint_sensorMeasurementRange">Sensor Measurement Range</string>
+    <string name="sensorfingerprint_sensorNoise">Sensor Noise</string>
+    <string name="sensorfingerprint_sensorResolution">Sensor Resolution</string>
+    <string name="sensorfingerprint_sensorSensitivity">Sensor Sensitivity</string>
+    <string name="sensorfingerprint_sensorLinearity">Sensor Linearity</string>
+    <string name="sensorfingerprint_sensorPlacement">Sensor Placement</string>
+    <string name="sensorfingerprint_sensorVE3Calibration">Sensor VE3 Calibration</string>
+    <string name="sensorfingerprint_sensorSampling">Sensor Sampling</string>
+    <string name="sensorfingerprint_startOver">Start Over</string>
+    <string name="sensordata_rawbias">Sensor Raw Bias</string>
+    <string name="sensor_raw_bias">Sensor Raw Bias</string>
+
+</resources>

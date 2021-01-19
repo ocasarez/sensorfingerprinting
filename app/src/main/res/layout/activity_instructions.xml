@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".InstructionsActivity">
+
+    <LinearLayout
+        android:id="@+id/linearLayout"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:gravity="bottom"
+        android:orientation="vertical">
+
+        <FrameLayout
+            android:id="@+id/instructions_activity_fl_fragements"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"/>
+
+        <TableLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="100dip"
+            android:layout_marginBottom="100dip"
+            android:stretchColumns="*">
+
+            <TableRow
+                android:id="@+id/instructions_activity_tr_firstTrace"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+
+                <TextView
+                    android:id="@+id/firstInstructions_traceResultTitle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="@font/roboto"
+                    android:text="@string/firstInstruction_traceResultTitle"
+                    android:textColor="@color/black" />
+
+                <TextView
+                    android:id="@+id/firstInstructions_traceResult"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="@font/roboto"
+                    android:gravity="center"
+                    android:textColor="@color/black" />
+            </TableRow>
+
+            <TableRow
+                android:id="@+id/instructions_activity_tr_secondTrace"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+
+                <TextView
+                    android:id="@+id/secondInstructions_traceResultTitle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="@font/roboto"
+                    android:text="@string/secondInstructions_traceResultTitle"
+                    android:textColor="@color/black" />
+
+                <TextView
+                    android:id="@+id/secondInstructions_traceResult"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="@font/roboto"
+                    android:gravity="center"
+                    android:textColor="@color/black" />
+
+            </TableRow>
+
+            <TableRow
+                android:id="@+id/instructions_activity_tr_thirdTrace"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+
+                <TextView
+                    android:id="@+id/thirdInstructions_traceResultTitle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="@font/roboto"
+                    android:text="@string/trace_3_result"
+                    android:textColor="@color/black" />
+
+                <TextView
+                    android:id="@+id/thirdInstructions_traceResult"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="@font/roboto"
+                    android:gravity="center"
+                    android:textColor="@color/black" />
+
+            </TableRow>
+
+        </TableLayout>
+
+        <Button
+            android:id="@+id/instructions_activity_btn_collectAndNext"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/instructions_collectTrace" />
+    </LinearLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>

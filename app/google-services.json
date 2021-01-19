@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "597351521097",
+    "firebase_url": "https://sensorfingerprinting-default-rtdb.firebaseio.com",
+    "project_id": "sensorfingerprinting",
+    "storage_bucket": "sensorfingerprinting.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:597351521097:android:177e8fb1bce8910e671898",
+        "android_client_info": {
+          "package_name": "com.oscarcasarezruiz.sensorfingerprinting"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "597351521097-e1fugbi7jq2af4am1atbhf49qf52fqhi.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBLSDYIIAUOe3S3FZX1B_OS7y-a-EUnQmA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "597351521097-e1fugbi7jq2af4am1atbhf49qf52fqhi.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
