@@ -61,5 +61,6 @@
     <string name="sensorfingerprint_startOver">Start Over</string>
     <string name="sensordata_rawbias">Sensor Raw Bias</string>
     <string name="sensor_raw_bias">Sensor Raw Bias</string>
+    <string name="uuid">UUID</string>
 
 </resources>

@@ -2,6 +2,8 @@ package com.oscarcasarezruiz.sensorfingerprinting.utils;
 
 import android.hardware.SensorManager;
 import android.util.Log;
+
+import com.oscarcasarezruiz.sensorfingerprinting.models.SensorFingerprint;
 import com.oscarcasarezruiz.sensorfingerprinting.models.SensorTrace;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -11,9 +13,9 @@ public final class Utils {
     public static final String TAG = "Utils";
 
     public static String findAxisAffectedByGravity(SensorTrace sensorTrace){
-        if(percentageRange(sensorTrace.getAccelerometerX(), SensorManager.GRAVITY_EARTH, 0.5f)){
+        if(percentageRange(sensorTrace.getAccelerometerX(), SensorManager.GRAVITY_EARTH, 0.25f)){
             return "AccelerometerX";
-        } else if (percentageRange(sensorTrace.getAccelerometerY(), SensorManager.GRAVITY_EARTH, 0.5f)){
+        } else if (percentageRange(sensorTrace.getAccelerometerY(), SensorManager.GRAVITY_EARTH, 0.25f)){
             return "AccelerometerY";
         } else {
             return "AccelerometerZ";
@@ -66,16 +68,25 @@ public final class Utils {
     }
 
     public static boolean percentageRange(float actual, float expected, float percentage){
-        if(actual <= (expected + (expected * percentage)) && actual >= (expected - (expected * percentage))){
+        Log.d(TAG, "percentageRange: Entered");
+        final float absA = Math.abs(actual);
+        final float absB = Math.abs(expected);
+        final float diff = Math.abs(actual - expected);
+
+        if (actual == expected) { // shortcut, handles infinities
+            Log.d(TAG, "percentageRange: Value Equaled");
             return true;
-        } else {
-            return false;
+        } else if (actual == 0 || expected == 0 || diff < Float.MIN_NORMAL) {
+            Log.d(TAG, "percentageRange: Less than MIN_NORMAL");
+            // a or b is zero or both are extremely close to it
+            // relative error is less meaningful here
+            return diff < (percentage * Float.MIN_NORMAL);
+        } else { // use relative error
+            Log.d(TAG, "percentageRange: Relative Error");
+            return diff / (absA + absB) < percentage;
         }
     }
 
-    public static float euclideanDistance(float x1, float y1, float x2, float y2){
-        return (float) Math.sqrt(Math.pow(x1 - x2, 2) + Math.pow(y1 - y2, 2));
-    }
 
     public static float[] AverageTracesMeasured(ArrayList<float[]> measurements){
         Log.d(TAG, "AverageTracesMeasured: Reached");
@@ -107,5 +118,4 @@ public final class Utils {
     public static float convertDoubleToFloat(Double value){
         return value.floatValue();
     }
-
 }

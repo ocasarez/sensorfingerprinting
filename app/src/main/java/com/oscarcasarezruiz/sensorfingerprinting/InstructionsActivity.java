@@ -118,14 +118,9 @@ public class InstructionsActivity extends AppCompatActivity implements Instructi
     @Override
     public void collectTrace() {
         mSensorManager.registerListener(this, mAccelerometer, SensorManager.SENSOR_STATUS_ACCURACY_HIGH);
-        // Stop Collecting Traces after 20 seconds
-        Handler handler = new Handler();
-        handler.postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                stopSensorDataCollection();
-            }
-        }, 10000);
+        // Stop Collecting Traces after 10 seconds
+        Handler handler2 = new Handler();
+        handler2.postDelayed(this::stopSensorDataCollection, 10000);
     }
 
     @Override

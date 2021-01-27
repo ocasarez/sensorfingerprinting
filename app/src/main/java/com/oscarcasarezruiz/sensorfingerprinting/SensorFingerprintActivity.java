@@ -1,23 +1,32 @@
 package com.oscarcasarezruiz.sensorfingerprinting;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
 
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
+import com.google.firebase.firestore.QuerySnapshot;
 import com.oscarcasarezruiz.sensorfingerprinting.models.SensorFingerprint;
 import com.oscarcasarezruiz.sensorfingerprinting.presenter.SensorFingerprintActivityPresenter;
-import com.oscarcasarezruiz.sensorfingerprinting.utils.DatabaseInstance;
-import java.util.ArrayList;
+
+import java.util.Date;
+
 
 public class SensorFingerprintActivity extends AppCompatActivity implements SensorFingerprintActivityPresenter.View, View.OnClickListener {
 
-    private final String TAG = "SensorFingerprintAct";
 
-    SensorFingerprintActivityPresenter presenter;
+    private static final String TAG = "SensorFingerprintActivity";
+    private SensorFingerprintActivityPresenter presenter;
+    private final String COLLECTION_PATH = "sensorFingerprints";
 
     // UI Elements
     private TextView mResult;
@@ -30,32 +39,29 @@ public class SensorFingerprintActivity extends AppCompatActivity implements Sens
     private TextView mSensorSensitivity;
     private TextView mSensorLinearity;
     private TextView mSensorRawBias;
+    private TextView mUUID;
 
-    // Data
-    SensorFingerprint sensorFingerprint;
+    // Database
+    private FirebaseFirestore db;
 
-    // Db
-    DatabaseInstance db;
-    ArrayList<SensorFingerprint> fingerprints;
+    // Fingerprint
+    private SensorFingerprint mSensorFingerprint;
 
+    @SuppressLint("LongLogTag")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_sensor_fingerprint);
         initViews();
         Bundle data = getIntent().getExtras();
-        sensorFingerprint = (SensorFingerprint) data.getParcelable("sensorFingerprint");
+        mSensorFingerprint = data.getParcelable("sensorFingerprint");
+        Log.d(TAG, "SensorFingerprint Local: " + mSensorFingerprint.toString());
 
-        db = new DatabaseInstance();
+        // Init Database
+        db = FirebaseFirestore.getInstance();
+
         presenter = new SensorFingerprintActivityPresenter(this);
-        presenter.updateSensorFingerprint(sensorFingerprint);
-        if(checkMatches()){ // Match found.
-            presenter.updateFingerprintResult(true);
-        } else { // No existing matches found.
-            presenter.updateFingerprintResult(false);
-            db.writeNewSensorFingerprint(sensorFingerprint);
-        }
-
+        readSenorFingerprints();
     }
 
     @Override
@@ -75,10 +81,11 @@ public class SensorFingerprintActivity extends AppCompatActivity implements Sens
         float[] noise = fingerprint.getSensorNoise();
         float[] rawBias = fingerprint.getSensorRawBias();
 
+        mUUID.setText(fingerprint.getUUID());
         mDeviceModel.setText(fingerprint.getDeviceModel());
         mSensorModel.setText(fingerprint.getSensorModel());
         mSensorVendor.setText(fingerprint.getSensorVendor());
-        mSensorMeasurementRange.setText(String.format("%f", sensorFingerprint.getSensorMeasurementRange()));
+        mSensorMeasurementRange.setText(String.format("%f", fingerprint.getSensorMeasurementRange()));
         mSensorNoise.setText(String.format("[%f,\n%f,\n%f]", noise[0], noise[1], noise[2]));
         mSensorResolution.setText(String.format("%f", fingerprint.getSensorResolution()));
         mSensorSensitivity.setText(String.format("%f", fingerprint.getSensorSensitivity()));
@@ -100,26 +107,52 @@ public class SensorFingerprintActivity extends AppCompatActivity implements Sens
     private void initViews(){
         updateActionBarTitle();
         findViewById(R.id.sensorfingerprint_activity_btn_startover).setOnClickListener(this);
-        mResult = (TextView) findViewById(R.id.sensorfingerprint_activity_tv_result);
-        mDeviceModel = (TextView) findViewById(R.id.sensorfingerprint_activity_tv_deviceModelValue);
-        mSensorModel = (TextView) findViewById(R.id.sensorfingerprint_activity_tv_sensorModelValue);
-        mSensorVendor = (TextView) findViewById(R.id.sensorfingerprint_activity_tv_sensorVendorValue);
-        mSensorMeasurementRange = (TextView) findViewById(R.id.sensorfingerprint_activity_tv_sensorMeasurementRangeValue);
-        mSensorNoise = (TextView) findViewById(R.id.sensorfingerprint_activity_tv_sensorNoiseValue);
-        mSensorResolution = (TextView) findViewById(R.id.sensorfingerprint_activity_tv_sensorResolutionValue);
-        mSensorSensitivity = (TextView) findViewById(R.id.sensorfingerprint_activity_tv_sensorSensitivityValue);
-        mSensorLinearity = (TextView) findViewById(R.id.sensorfingerprint_activity_tv_sensorLinearityValue);
-        mSensorRawBias = (TextView) findViewById(R.id.sensorfingerprint_activity_tv_sensorRawBiasValue);
+        mResult = findViewById(R.id.sensorfingerprint_activity_tv_result);
+        mDeviceModel = findViewById(R.id.sensorfingerprint_activity_tv_deviceModelValue);
+        mSensorModel = findViewById(R.id.sensorfingerprint_activity_tv_sensorModelValue);
+        mSensorVendor = findViewById(R.id.sensorfingerprint_activity_tv_sensorVendorValue);
+        mSensorMeasurementRange = findViewById(R.id.sensorfingerprint_activity_tv_sensorMeasurementRangeValue);
+        mSensorNoise = findViewById(R.id.sensorfingerprint_activity_tv_sensorNoiseValue);
+        mSensorResolution = findViewById(R.id.sensorfingerprint_activity_tv_sensorResolutionValue);
+        mSensorSensitivity = findViewById(R.id.sensorfingerprint_activity_tv_sensorSensitivityValue);
+        mSensorLinearity = findViewById(R.id.sensorfingerprint_activity_tv_sensorLinearityValue);
+        mSensorRawBias = findViewById(R.id.sensorfingerprint_activity_tv_sensorRawBiasValue);
+        mUUID = findViewById(R.id.sensorfingerprint_activity_tv_UUIDValue);
     }
 
-    private boolean checkMatches(){
-        boolean fingerprintExists = false;
-        fingerprints = db.readSenorFingerprintBySensorVendor(sensorFingerprint.getSensorVendor());
-        Log.d(TAG, "checkMatches: this.sensorFingerprint= " + sensorFingerprint.toString());
-        for (SensorFingerprint fingerprint : fingerprints) {
-            fingerprintExists = sensorFingerprint.compareSensorFingerprint(fingerprint);
-        }
-        return fingerprintExists;
+    private void writeNewSensorFingerprint(){
+        db.collection(COLLECTION_PATH).document(Long.toString(new Date().getTime())).set(mSensorFingerprint.convertSensorFingerprintToHashMap());
+    }
+
+    @SuppressLint("LongLogTag")
+    private void readSenorFingerprints(){
+        db.collection(COLLECTION_PATH)
+                .get()
+                .addOnCompleteListener(task -> {
+                    boolean matchFound = false;
+                    if(task.isSuccessful()){
+                        for(QueryDocumentSnapshot documentSnapshot : task.getResult()){
+                            if(!documentSnapshot.exists()){
+                                break;
+                            }
+                            SensorFingerprint sensorFingerprint = new SensorFingerprint(documentSnapshot.getData());
+                            Log.d(TAG, "onComplete: sensorFingerprint: " + sensorFingerprint.toString());
+                            if(sensorFingerprint.compareSensorFingerprint(mSensorFingerprint)){
+                                presenter.updateSensorFingerprint(sensorFingerprint);
+                                matchFound = true;
+                                break;
+                            }
+                        }
+                    } else {
+                        Log.d(TAG, "Error getting documents: ", task.getException());
+                    }
+                    presenter.updateFingerprintResult(matchFound);
+                    if(!matchFound){
+                        mSensorFingerprint.setUUID(mSensorFingerprint.getDeviceModel() + new Date().getTime());
+                        writeNewSensorFingerprint();
+                        presenter.updateSensorFingerprint(mSensorFingerprint);
+                    }
+                });
     }
 
 }

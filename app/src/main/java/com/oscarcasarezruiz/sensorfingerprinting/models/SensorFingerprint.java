@@ -2,19 +2,17 @@ package com.oscarcasarezruiz.sensorfingerprinting.models;
 
 import android.os.Parcel;
 import android.os.Parcelable;
-import android.util.Log;
 
 import com.oscarcasarezruiz.sensorfingerprinting.utils.Utils;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 public class SensorFingerprint implements Parcelable {
 
-    private final String TAG = "SensorFingerprint";
-
+    private String mUUID;
     private String mDeviceModel;
     private String mSensorModel;
     private String mSensorVendor;
@@ -31,26 +29,25 @@ public class SensorFingerprint implements Parcelable {
     }
 
     public SensorFingerprint(Map<String, Object> document){
+        this.mUUID = (String) document.get("UUID");
         this.mDeviceModel = (String) document.get("deviceModel");
         this.mSensorModel = (String) document.get("sensorModel");
         this.mSensorVendor = (String) document.get("sensorVendor");
         this.mSensorMeasurementRange = Utils.convertDoubleToFloat((Double) document.get("sensorMeasurementRange"));
-        List<Double> doubleList1 = (List<Double>) document.get("sensorNoise");
+        ArrayList<Double> doubleList1 = (ArrayList<Double>) document.get("sensorNoise");
         this.mSensorNoise = new float[doubleList1.size()];
         int i = 0;
         for(Double d : doubleList1){
-            float f = Utils.convertDoubleToFloat(d);
-            this.mSensorNoise[i++] = f;
+            this.mSensorNoise[i++] = Utils.convertDoubleToFloat(d);
         }
         this.mSensorResolution = Utils.convertDoubleToFloat((Double)document.get("sensorResolution"));
         this.mSensorSensitivity = Utils.convertDoubleToFloat((Double)document.get("sensorSensitivity"));
         this.mSensorLinearity = Utils.convertDoubleToFloat((Double) document.get("sensorLinearity"));
-        List<Double> doubleList2 = (List<Double>) document.get("sensorNoise");
+        ArrayList<Double> doubleList2 = (ArrayList<Double>) document.get("sensorRawBias");
         this.mSensorRawBias = new float[doubleList2.size()];
         i = 0;
         for(Double d: doubleList2){
-            float f = Utils.convertDoubleToFloat(d);
-            this.mSensorRawBias[i++] = f;
+            this.mSensorRawBias[i++] = Utils.convertDoubleToFloat(d);
         }
     }
 
@@ -80,6 +77,7 @@ public class SensorFingerprint implements Parcelable {
 
     public Map<String, Object> convertSensorFingerprintToHashMap(){
         Map<String, Object> docData = new HashMap<>();
+        docData.put("UUID", this.mUUID);
         docData.put("deviceModel", this.mDeviceModel);
         docData.put("sensorModel", this.mSensorModel);
         docData.put("sensorVendor", this.mSensorVendor);
@@ -91,6 +89,67 @@ public class SensorFingerprint implements Parcelable {
         docData.put("sensorRawBias", Arrays.asList(this.mSensorRawBias[0], this.mSensorRawBias[1], this.mSensorRawBias[2]));
 
         return docData;
+    }
+
+    public boolean compareSensorFingerprint(SensorFingerprint o){
+        int numberOfMatches = 0;
+        int weight = 0;
+        float percentage = 0.0001f;
+        // Sensor Sensitivity - 9
+        if(Utils.percentageRange(this.mSensorSensitivity, o.getSensorSensitivity(), percentage)){
+            numberOfMatches++;
+            weight += 9;
+        }
+        // Sensor Linearity - 8
+        if(Utils.percentageRange(this.mSensorLinearity, o.getSensorLinearity(), percentage)){
+            numberOfMatches++;
+            weight += 8;
+        }
+        // Device Model - 7
+        if(this.mDeviceModel.equals(o.getDeviceModel())){
+            numberOfMatches++;
+            weight += 7;
+        }
+        // Sensor Model - 6
+        if(this.mSensorModel.equals(o.getSensorModel())){
+            numberOfMatches++;
+            weight += 6;
+        }
+        // Sensor Vendor - 5
+        if(this.mSensorVendor.equals(o.getSensorVendor())){
+            numberOfMatches++;
+            weight += 5;
+        }
+        // Sensor Measurement Range - 4
+        if(Utils.percentageRange(this.mSensorMeasurementRange, o.getSensorMeasurementRange(), percentage)){
+            numberOfMatches++;
+            weight += 4;
+        }
+        // Sensor Noise - 3
+        boolean compareX = Utils.percentageRange(this.mSensorNoise[0], o.getSensorNoise()[0], percentage);
+        boolean compareY = Utils.percentageRange(this.mSensorNoise[1], o.getSensorNoise()[1], percentage);
+        boolean compareZ = Utils.percentageRange(this.mSensorNoise[2], o.getSensorNoise()[2], percentage);
+        if(compareX && compareY && compareZ){
+            numberOfMatches++;
+            weight += 3;
+        }
+        // Sensor Resolution - 2
+        if(Utils.percentageRange(this.mSensorResolution, o.getSensorResolution(), percentage)){
+            numberOfMatches++;
+            weight += 2;
+        }
+        // Raw Bias - 1
+        compareX = Utils.percentageRange(this.mSensorRawBias[0], o.getSensorRawBias()[0], percentage);
+        compareY = Utils.percentageRange(this.mSensorRawBias[1], o.getSensorRawBias()[1], percentage);
+        compareZ = Utils.percentageRange(this.mSensorRawBias[2], o.getSensorRawBias()[2], percentage);
+        if(compareX && compareY && compareZ){
+            numberOfMatches++;
+            weight += 1;
+        }
+
+        if(numberOfMatches == 9){
+            return true;
+        } else return numberOfMatches >= 7 || weight > 30;
     }
 
     /**
@@ -168,89 +227,26 @@ public class SensorFingerprint implements Parcelable {
         this.mSensorRawBias = mSensorRawBias;
     }
 
-    public boolean compareSensorFingerprint(SensorFingerprint sensorFingerprint){
-        Log.d(TAG, "compareSensorFingerprint: Sensor Fingerprint to be compared: " + sensorFingerprint.toString());
-        int numberOfMatches = 0;
-        int weight = 0;
-        // Sensor Sensitivity - 9
-        if(Utils.percentageRange(this.mSensorSensitivity, sensorFingerprint.getSensorSensitivity(), 0.025f)){
-            numberOfMatches++;
-            weight += 9;
-        }
-        // Sensor Linearity - 8
-        if(Utils.percentageRange(this.mSensorLinearity, sensorFingerprint.getSensorLinearity(), 0.025f)){
-            numberOfMatches++;
-            weight += 8;
-        }
-        // Device Model - 7
-        if(this.mDeviceModel.equals(sensorFingerprint.getDeviceModel())){
-            numberOfMatches++;
-            weight += 7;
-        }
-        // Sensor Model - 6
-        if(this.mSensorModel.equals(sensorFingerprint.getSensorModel())){
-            numberOfMatches++;
-            weight += 6;
-        }
-        // Sensor Vendor - 5
-        if(this.mSensorVendor.equals(sensorFingerprint.getSensorVendor())){
-            numberOfMatches++;
-            weight += 5;
-        }
-        // Sensor Measurement Range - 4
-        if(Utils.percentageRange(this.mSensorMeasurementRange, sensorFingerprint.getSensorMeasurementRange(), 0.025f)){
-            numberOfMatches++;
-            weight += 4;
-        }
-        // Sensor Noise - 3
-        boolean compareX = Utils.percentageRange(this.mSensorNoise[0], sensorFingerprint.getSensorNoise()[0], 0.025f);
-        boolean compareY = Utils.percentageRange(this.mSensorNoise[1], sensorFingerprint.getSensorNoise()[1], 0.025f);
-        boolean compareZ = Utils.percentageRange(this.mSensorNoise[2], sensorFingerprint.getSensorNoise()[2], 0.025f);
-        if(compareX && compareY && compareZ){
-            numberOfMatches++;
-            weight += 3;
-        }
-        // Sensor Resolution - 2
-        if(Utils.percentageRange(this.mSensorResolution, sensorFingerprint.getSensorResolution(), 0.025f)){
-            numberOfMatches++;
-            weight += 2;
-        }
-        // Raw Bias - 1
-        compareX = Utils.percentageRange(this.mSensorRawBias[0], sensorFingerprint.getSensorRawBias()[0], 0.025f);
-        compareY = Utils.percentageRange(this.mSensorRawBias[1], sensorFingerprint.getSensorRawBias()[1], 0.025f);
-        compareZ = Utils.percentageRange(this.mSensorRawBias[2], sensorFingerprint.getSensorRawBias()[2], 0.025f);
-        if(compareX && compareY && compareZ){
-            numberOfMatches++;
-            weight += 1;
-        }
+    public String getUUID() {
+        return mUUID;
+    }
 
-        Log.d(TAG, "compareSensorFingerprint: numberOfMatches: " + numberOfMatches);
-        Log.d(TAG, "compareSensorFingerprint: weight: " + weight);
-        if(numberOfMatches == 9){
-            return true;
-        } else if (numberOfMatches == 0){
-            return  false;
-        } else if (numberOfMatches >= 7 && weight > 36){
-            return true;
-        } else if (numberOfMatches >= 4 && weight > 30){
-            return true;
-        } else {
-            return false;
-        }
+    public void setUUID(String mUUID) {
+        this.mUUID = mUUID;
     }
 
     @Override
     public String toString() {
         return "SensorFingerprint{" +
-                ", mDeviceModel='" + mDeviceModel + '\'' +
-                ", mSensorModel='" + mSensorModel + '\'' +
-                ", mSensorVendor='" + mSensorVendor + '\'' +
-                ", mSensorMeasurementRange=" + mSensorMeasurementRange +
-                ", mSensorNoise=" + Arrays.toString(mSensorNoise) +
-                ", mSensorResolution=" + mSensorResolution +
-                ", mSensorSensitivity=" + mSensorSensitivity +
-                ", mSensorLinearity=" + mSensorLinearity +
-                ", mSensorRawBias=" + Arrays.toString(mSensorRawBias) +
+                "\n  mDeviceModel='" + mDeviceModel + '\'' +
+                "\n, mSensorModel='" + mSensorModel + '\'' +
+                "\n, mSensorVendor='" + mSensorVendor + '\'' +
+                "\n, mSensorMeasurementRange=" + mSensorMeasurementRange +
+                "\n, mSensorNoise=" + Arrays.toString(mSensorNoise) +
+                "\n, mSensorResolution=" + mSensorResolution +
+                "\n, mSensorSensitivity=" + mSensorSensitivity +
+                "\n, mSensorLinearity=" + mSensorLinearity +
+                "\n, mSensorRawBias=" + Arrays.toString(mSensorRawBias) +
                 '}';
     }
 

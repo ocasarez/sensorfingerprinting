@@ -1,8 +1,13 @@
 package com.oscarcasarezruiz.sensorfingerprinting.presenter;
 
+import android.annotation.SuppressLint;
+import android.util.Log;
+
 import com.oscarcasarezruiz.sensorfingerprinting.models.SensorFingerprint;
 
 public class SensorFingerprintActivityPresenter {
+
+    private final String TAG = "SensorFingerprintActivityPresenter";
 
     private SensorFingerprint mSensorFingerprint;
     private View mView;
@@ -12,10 +17,13 @@ public class SensorFingerprintActivityPresenter {
         this.mView = view;
     }
 
+    @SuppressLint("LongLogTag")
     public void updateFingerprintResult(boolean result){
         if(result){ // Match Found
+            Log.d(TAG, "updateFingerprintResult: Existing Entry");
             mView.updateFingerprintResultView(" Existing Entry");
         } else { // No match found.
+            Log.d(TAG, "updateFingerprintResult: New Entry");
             mView.updateFingerprintResultView(" New Entry");
         }
     }
@@ -30,10 +38,12 @@ public class SensorFingerprintActivityPresenter {
     }
 
 
+
     public interface View {
         void updateActionBarTitle();
         void updateSensorFingerprintView(SensorFingerprint sensorFingerprint);
         void updateFingerprintResultView(String s);
         void navigateToFeatures();
     }
+
 }

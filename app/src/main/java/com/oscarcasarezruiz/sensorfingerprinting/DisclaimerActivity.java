@@ -6,7 +6,6 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 
-import com.google.firebase.auth.FirebaseUser;
 import com.oscarcasarezruiz.sensorfingerprinting.presenter.DisclaimerActivityPresenter;
 
 public class DisclaimerActivity extends AppCompatActivity implements DisclaimerActivityPresenter.View, View.OnClickListener {
