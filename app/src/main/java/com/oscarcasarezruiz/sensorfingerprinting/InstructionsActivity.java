@@ -50,13 +50,18 @@ public class InstructionsActivity extends AppCompatActivity implements Instructi
     private TextView mTraceView3;
     private Button mCollectAndNextButton;
 
+    private String mTraceCount;
+    private boolean mIsLogging;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_instructions);
+        Bundle data = getIntent().getExtras();
+        mTraceCount = data.getString("TraceCount");
         initViews();
         initSensor();
-
+        mIsLogging = false;
         presenter = new InstructionsActivityPresenter(this);
         accelerometerMeasurement = new ArrayList<>();
         sensorFingerprint = new SensorFingerprint();
@@ -72,17 +77,21 @@ public class InstructionsActivity extends AppCompatActivity implements Instructi
                 if(buttonText.equals("Collect Trace")){
                     mCollectAndNextButton.setEnabled(false);
                     presenter.collectTraceButtonClicked();
-                } else { // Next
+                } else if (buttonText.equals("Next")){ // Next
                     presenter.nextInstructionButtonClicked();
                     mCollectAndNextButton.setText(R.string.instructions_collectTrace);
+                } else {
+                    presenter.sensorFingerprintResultsButtonClicked();
                 }
             } else if (mCurrentFragment.equals("SecondInstructions")){
                 if(buttonText.equals("Collect Trace")){
                     mCollectAndNextButton.setEnabled(false);
                     presenter.collectTraceButtonClicked();
-                } else { // Next
+                } else if(buttonText.equals("Next")){ // Next+
                     presenter.nextInstructionButtonClicked();
                     mCollectAndNextButton.setText(R.string.instructions_collectTrace);
+                } else {
+                    presenter.sensorFingerprintResultsButtonClicked();
                 }
             } else {
                 if(buttonText.equals("Collect Trace")){
@@ -117,18 +126,25 @@ public class InstructionsActivity extends AppCompatActivity implements Instructi
 
     @Override
     public void collectTrace() {
-        mSensorManager.registerListener(this, mAccelerometer, SensorManager.SENSOR_STATUS_ACCURACY_HIGH);
-        // Stop Collecting Traces after 10 seconds
-        Handler handler2 = new Handler();
-        handler2.postDelayed(this::stopSensorDataCollection, 10000);
+        Handler handler = new Handler();
+        handler.postAtTime(this::startSensorDataCollection, 2000);
+        handler.postDelayed(this::stopSensorDataCollection, 15000);
     }
 
     @Override
     public void nextInstruction() {
-        if(mCurrentFragment.equals("FirstInstructions")){
-            mCurrentFragment = loadFragments(new SecondInstructionFragment(), "SecondInstructions");
-        } else {
-            mCurrentFragment = loadFragments(new ThirdInstructionFragment(), "ThirdInstructions");
+        switch (mTraceCount){
+            case "Three":
+                if(mCurrentFragment.equals("FirstInstructions")){
+                    mCurrentFragment = loadFragments(new SecondInstructionFragment(), "SecondInstructions");
+                } else {
+                    mCurrentFragment = loadFragments(new ThirdInstructionFragment(), "ThirdInstructions");
+                }
+                break;
+            case "Two":
+                if(mCurrentFragment.equals("FirstInstructions")){
+                    mCurrentFragment = loadFragments(new SecondInstructionFragment(), "SecondInstructions");
+                }
         }
     }
 
@@ -137,15 +153,17 @@ public class InstructionsActivity extends AppCompatActivity implements Instructi
         retrieveSensorFingerprint();
         Intent intent = new Intent(this, SensorFingerprintActivity.class);
         intent.putExtra("sensorFingerprint", sensorFingerprint);
+        intent.putExtra("TraceCount", mTraceCount);
         startActivity(intent);
     }
 
     // Sensor Functions
     @Override
     public void onSensorChanged(SensorEvent sensorEvent) {
-        int sensorType = sensorEvent.sensor.getType();
-        if(sensorType == Sensor.TYPE_ACCELEROMETER){
-            accelerometerMeasurement.add(sensorEvent.values);
+        if(mIsLogging){
+            if(sensorEvent.sensor.getType() == Sensor.TYPE_ACCELEROMETER){
+                accelerometerMeasurement.add(sensorEvent.values);
+            }
         }
     }
 
@@ -156,9 +174,23 @@ public class InstructionsActivity extends AppCompatActivity implements Instructi
 
     private void initViews(){
         updateActionBarTitle();
-        mTraceView1 = (TextView) findViewById(R.id.firstInstructions_traceResult);
-        mTraceView2 = (TextView) findViewById(R.id.secondInstructions_traceResult);
-        mTraceView3 = (TextView) findViewById(R.id.thirdInstructions_traceResult);
+        switch (mTraceCount){
+            case "Three":
+                mTraceView1 = (TextView) findViewById(R.id.firstInstructions_traceResult);
+                mTraceView2 = (TextView) findViewById(R.id.secondInstructions_traceResult);
+                mTraceView3 = (TextView) findViewById(R.id.thirdInstructions_traceResult);
+                break;
+            case "Two":
+                mTraceView1 = (TextView) findViewById(R.id.firstInstructions_traceResult);
+                mTraceView2 = (TextView) findViewById(R.id.secondInstructions_traceResult);
+                findViewById(R.id.instructions_activity_tr_thirdTrace).setVisibility(View.GONE);
+                break;
+            case "One":
+                mTraceView1 = (TextView) findViewById(R.id.firstInstructions_traceResult);
+                findViewById(R.id.instructions_activity_tr_secondTrace).setVisibility(View.GONE);
+                findViewById(R.id.instructions_activity_tr_thirdTrace).setVisibility(View.GONE);
+                break;
+        }
 
         mCollectAndNextButton = (Button) findViewById(R.id.instructions_activity_btn_collectAndNext);
         mCollectAndNextButton.setOnClickListener(this);
@@ -188,6 +220,11 @@ public class InstructionsActivity extends AppCompatActivity implements Instructi
         mAccelerometer = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
     }
 
+    private void startSensorDataCollection(){
+        mSensorManager.registerListener(this, mAccelerometer, SensorManager.SENSOR_STATUS_ACCURACY_HIGH);
+        mIsLogging = true;
+    }
+
     private void stopSensorDataCollection(){
         mSensorManager.unregisterListener(this);
         if(mCurrentFragment.equals("SecondInstructions")){
@@ -199,10 +236,24 @@ public class InstructionsActivity extends AppCompatActivity implements Instructi
             }
         }
         saveTrace();
-        if(mCurrentFragment.equals("ThirdInstructions")){
-            mCollectAndNextButton.setText(R.string.instructions_goToSensorFingerprint);
-        } else {
-            mCollectAndNextButton.setText(R.string.instructions_next);
+        switch (mTraceCount){
+            case "Three":
+                if(mCurrentFragment.equals("ThirdInstructions")){
+                    mCollectAndNextButton.setText(R.string.instructions_goToSensorFingerprint);
+                } else {
+                    mCollectAndNextButton.setText(R.string.instructions_next);
+                }
+                break;
+            case "Two":
+                if(mCurrentFragment.equals("SecondInstructions")){
+                    mCollectAndNextButton.setText(R.string.instructions_goToSensorFingerprint);
+                } else {
+                    mCollectAndNextButton.setText(R.string.instructions_next);
+                }
+                break;
+            case "One":
+                mCollectAndNextButton.setText(R.string.instructions_goToSensorFingerprint);
+                break;
         }
         mCollectAndNextButton.setEnabled(true);
     }
@@ -235,9 +286,25 @@ public class InstructionsActivity extends AppCompatActivity implements Instructi
         sensorFingerprint.setSensorResolution(mAccelerometer.getResolution());
         // Senor Raw Bias
         sensorFingerprint.setSensorRawBias(senorRawBias);
-        // Sensor Sensitivity
-        sensorFingerprint.setSensorSensitivity(Utils.calculateSensorSensitivity(presenter.getFirstTrace().getAccelerometerZ(), presenter.getSecondTrace().getAccelerometerZ()));
-        // Sensor Linearity
-        sensorFingerprint.setSensorLinearity(Utils.calculateSensorLinearity(presenter.getFirstTrace().getAccelerometerZ(), presenter.getSecondTrace().getAccelerometerZ(), presenter.getThirdTrace().getAccelerometerZ()));
+        switch (mTraceCount){
+            case "Three":
+                // Sensor Sensitivity
+                sensorFingerprint.setSensorSensitivity(Utils.calculateSensorSensitivity(presenter.getFirstTrace().getAccelerometerZ(), presenter.getSecondTrace().getAccelerometerZ()));
+                // Sensor Linearity
+                sensorFingerprint.setSensorLinearity(Utils.calculateSensorLinearity(presenter.getFirstTrace().getAccelerometerZ(), presenter.getSecondTrace().getAccelerometerZ(), presenter.getThirdTrace().getAccelerometerZ()));
+                break;
+            case "Two":
+                // Sensor Sensitivity
+                sensorFingerprint.setSensorSensitivity(Utils.calculateSensorSensitivity(presenter.getFirstTrace().getAccelerometerZ(), presenter.getSecondTrace().getAccelerometerZ()));
+                // Sensor Linearity
+                sensorFingerprint.setSensorLinearity(Utils.calculateSensorLinearity(presenter.getFirstTrace().getAccelerometerZ(), presenter.getSecondTrace().getAccelerometerZ(), 0));
+                break;
+            case "One":
+                // Sensor Sensitivity
+                sensorFingerprint.setSensorSensitivity(Utils.calculateSensorSensitivity(presenter.getFirstTrace().getAccelerometerZ(), 0));
+                // Sensor Linearity
+                sensorFingerprint.setSensorLinearity(Utils.calculateSensorLinearity(presenter.getFirstTrace().getAccelerometerZ(), 0, 0));
+                break;
+        }
     }
 }

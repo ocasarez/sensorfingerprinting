@@ -1,5 +1,7 @@
 package com.oscarcasarezruiz.sensorfingerprinting.utils;
 
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.hardware.SensorManager;
 import android.util.Log;
 
@@ -7,15 +9,16 @@ import com.oscarcasarezruiz.sensorfingerprinting.models.SensorFingerprint;
 import com.oscarcasarezruiz.sensorfingerprinting.models.SensorTrace;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.UUID;
 
 public final class Utils {
 
     public static final String TAG = "Utils";
 
     public static String findAxisAffectedByGravity(SensorTrace sensorTrace){
-        if(percentageRange(sensorTrace.getAccelerometerX(), SensorManager.GRAVITY_EARTH, 0.25f)){
+        if(percentageRange("Gravity on X-Axis", sensorTrace.getAccelerometerX(), SensorManager.GRAVITY_EARTH, 0.25f)){
             return "AccelerometerX";
-        } else if (percentageRange(sensorTrace.getAccelerometerY(), SensorManager.GRAVITY_EARTH, 0.25f)){
+        } else if (percentageRange("Gravity on Y-Axis", sensorTrace.getAccelerometerY(), SensorManager.GRAVITY_EARTH, 0.25f)){
             return "AccelerometerY";
         } else {
             return "AccelerometerZ";
@@ -67,29 +70,27 @@ public final class Utils {
         }
     }
 
-    public static boolean percentageRange(float actual, float expected, float percentage){
-        Log.d(TAG, "percentageRange: Entered");
+    public static boolean percentageRange(String flag, float actual, float expected, float percentage){
         final float absA = Math.abs(actual);
         final float absB = Math.abs(expected);
         final float diff = Math.abs(actual - expected);
+        boolean result = false;
 
         if (actual == expected) { // shortcut, handles infinities
-            Log.d(TAG, "percentageRange: Value Equaled");
-            return true;
+            result = true;
         } else if (actual == 0 || expected == 0 || diff < Float.MIN_NORMAL) {
-            Log.d(TAG, "percentageRange: Less than MIN_NORMAL");
             // a or b is zero or both are extremely close to it
             // relative error is less meaningful here
-            return diff < (percentage * Float.MIN_NORMAL);
+            result =  diff < (percentage * Float.MIN_NORMAL);
         } else { // use relative error
-            Log.d(TAG, "percentageRange: Relative Error");
-            return diff / (absA + absB) < percentage;
+            result =  diff / (absA + absB) < percentage;
         }
+        Log.d(TAG, flag + "=> " + result);
+        return result;
     }
 
 
     public static float[] AverageTracesMeasured(ArrayList<float[]> measurements){
-        Log.d(TAG, "AverageTracesMeasured: Reached");
         float[] average = new float[]{0.0f,0.0f,0.0f};
 
         // Add Values
@@ -118,4 +119,5 @@ public final class Utils {
     public static float convertDoubleToFloat(Double value){
         return value.floatValue();
     }
+
 }

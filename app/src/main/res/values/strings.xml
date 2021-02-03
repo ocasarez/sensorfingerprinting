@@ -9,7 +9,9 @@
     <string name="disclaimer_accept">Accept</string>
     <string name="features_title">Features</string>
     <string name="features_sensordata">Sensor Data</string>
-    <string name="features_sensorfingerprint">Sensor Fingerprint</string>
+    <string name="features_sensorfingerprint_3trace">Sensor Fingerprint (3 Traces)</string>
+    <string name="features_sensorfingerprint_2trace">Sensor Fingerprint (2 Traces)</string>
+    <string name="features_sensorfingerprint_1trace">Sensor Fingerprint (1 Trace)</string>
     <string name="sensordata_title">Sensor Data</string>
     <string name="sensordata_model">Sensor Model</string>
     <string name="sensordata_vendor">Sensor Vendor</string>
@@ -62,5 +64,6 @@
     <string name="sensordata_rawbias">Sensor Raw Bias</string>
     <string name="sensor_raw_bias">Sensor Raw Bias</string>
     <string name="uuid">UUID</string>
+    <string name="device_uuid">Device UUID:</string>
 
 </resources>

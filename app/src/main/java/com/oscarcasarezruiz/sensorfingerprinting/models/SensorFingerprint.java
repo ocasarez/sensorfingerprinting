@@ -2,6 +2,7 @@ package com.oscarcasarezruiz.sensorfingerprinting.models;
 
 import android.os.Parcel;
 import android.os.Parcelable;
+import android.util.Log;
 
 import com.oscarcasarezruiz.sensorfingerprinting.utils.Utils;
 
@@ -11,6 +12,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class SensorFingerprint implements Parcelable {
+
+    private String TAG = "SensorFingerprint";
 
     private String mUUID;
     private String mDeviceModel;
@@ -91,65 +94,52 @@ public class SensorFingerprint implements Parcelable {
         return docData;
     }
 
-    public boolean compareSensorFingerprint(SensorFingerprint o){
-        int numberOfMatches = 0;
+    public int compareSensorFingerprint(SensorFingerprint o){
         int weight = 0;
         float percentage = 0.0001f;
         // Sensor Sensitivity - 9
-        if(Utils.percentageRange(this.mSensorSensitivity, o.getSensorSensitivity(), percentage)){
-            numberOfMatches++;
+        if(Utils.percentageRange("Sensor Sensitivity", this.mSensorSensitivity, o.getSensorSensitivity(), percentage)){
             weight += 9;
         }
         // Sensor Linearity - 8
-        if(Utils.percentageRange(this.mSensorLinearity, o.getSensorLinearity(), percentage)){
-            numberOfMatches++;
+        if(Utils.percentageRange("Linearity", this.mSensorLinearity, o.getSensorLinearity(), percentage)){
             weight += 8;
         }
-        // Device Model - 7
+        // Device Model - 1
         if(this.mDeviceModel.equals(o.getDeviceModel())){
-            numberOfMatches++;
-            weight += 7;
-        }
-        // Sensor Model - 6
-        if(this.mSensorModel.equals(o.getSensorModel())){
-            numberOfMatches++;
-            weight += 6;
-        }
-        // Sensor Vendor - 5
-        if(this.mSensorVendor.equals(o.getSensorVendor())){
-            numberOfMatches++;
-            weight += 5;
-        }
-        // Sensor Measurement Range - 4
-        if(Utils.percentageRange(this.mSensorMeasurementRange, o.getSensorMeasurementRange(), percentage)){
-            numberOfMatches++;
-            weight += 4;
-        }
-        // Sensor Noise - 3
-        boolean compareX = Utils.percentageRange(this.mSensorNoise[0], o.getSensorNoise()[0], percentage);
-        boolean compareY = Utils.percentageRange(this.mSensorNoise[1], o.getSensorNoise()[1], percentage);
-        boolean compareZ = Utils.percentageRange(this.mSensorNoise[2], o.getSensorNoise()[2], percentage);
-        if(compareX && compareY && compareZ){
-            numberOfMatches++;
-            weight += 3;
-        }
-        // Sensor Resolution - 2
-        if(Utils.percentageRange(this.mSensorResolution, o.getSensorResolution(), percentage)){
-            numberOfMatches++;
-            weight += 2;
-        }
-        // Raw Bias - 1
-        compareX = Utils.percentageRange(this.mSensorRawBias[0], o.getSensorRawBias()[0], percentage);
-        compareY = Utils.percentageRange(this.mSensorRawBias[1], o.getSensorRawBias()[1], percentage);
-        compareZ = Utils.percentageRange(this.mSensorRawBias[2], o.getSensorRawBias()[2], percentage);
-        if(compareX && compareY && compareZ){
-            numberOfMatches++;
             weight += 1;
         }
-
-        if(numberOfMatches == 9){
-            return true;
-        } else return numberOfMatches >= 7 || weight > 30;
+        // Sensor Model - 3
+        if(this.mSensorModel.equals(o.getSensorModel())){
+            weight += 3;
+        }
+        // Sensor Vendor - 2
+        if(this.mSensorVendor.equals(o.getSensorVendor())){
+            weight += 2;
+        }
+        // Sensor Measurement Range - 7
+        if(Utils.percentageRange("Sensor Measurement Range", this.mSensorMeasurementRange, o.getSensorMeasurementRange(), percentage)){
+            weight += 7;
+        }
+        // Sensor Noise - 5
+        boolean compareX = Utils.percentageRange("Noise X Axis", this.mSensorNoise[0], o.getSensorNoise()[0], percentage);
+        boolean compareY = Utils.percentageRange("Noise Y Axis", this.mSensorNoise[1], o.getSensorNoise()[1], percentage);
+        boolean compareZ = Utils.percentageRange("Noise Z Axis", this.mSensorNoise[2], o.getSensorNoise()[2], percentage);
+        if(compareX && compareY && compareZ){
+            weight += 5;
+        }
+        // Sensor Resolution - 4
+        if(Utils.percentageRange("Sensor Resolution", this.mSensorResolution, o.getSensorResolution(), percentage)){
+            weight += 4;
+        }
+        // Raw Bias - 6
+        compareX = Utils.percentageRange("Raw Bias X Axis", this.mSensorRawBias[0], o.getSensorRawBias()[0], percentage);
+        compareY = Utils.percentageRange("Raw Bias Y Axis", this.mSensorRawBias[1], o.getSensorRawBias()[1], percentage);
+        compareZ = Utils.percentageRange("Raw Bias Z Axis", this.mSensorRawBias[2], o.getSensorRawBias()[2], percentage);
+        if(compareX && compareY && compareZ){
+            weight += 6;
+        }
+        return weight;
     }
 
     /**

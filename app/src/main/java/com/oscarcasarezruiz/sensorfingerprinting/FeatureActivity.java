@@ -2,7 +2,6 @@ package com.oscarcasarezruiz.sensorfingerprinting;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-import android.app.ActionBar;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
@@ -26,7 +25,9 @@ public class FeatureActivity extends AppCompatActivity implements FeatureActivit
     private void initViews(){
         updateActionBarTitle();
         findViewById(R.id.feature_activity_btn_sensordata).setOnClickListener(this);
-        findViewById(R.id.feature_activity_btn_sensorfingerprint).setOnClickListener(this);
+        findViewById(R.id.feature_activity_btn_sensorfingerprint_3trace).setOnClickListener(this);
+        findViewById(R.id.feature_activity_btn_sensorfingerprint_2trace).setOnClickListener(this);
+        findViewById(R.id.feature_activity_btn_sensorfingerprint_1trace).setOnClickListener(this);
     }
 
     @Override
@@ -35,8 +36,14 @@ public class FeatureActivity extends AppCompatActivity implements FeatureActivit
             case R.id.feature_activity_btn_sensordata:
                 presenter.sensorDataButtonClicked();
                 break;
-            case R.id.feature_activity_btn_sensorfingerprint:
-                presenter.sensorFingerprintButtonClicked();
+            case R.id.feature_activity_btn_sensorfingerprint_3trace:
+                presenter.sensorFingerprintButtonClicked("Three");
+                break;
+            case R.id.feature_activity_btn_sensorfingerprint_2trace:
+                presenter.sensorFingerprintButtonClicked("Two");
+                break;
+            case R.id.feature_activity_btn_sensorfingerprint_1trace:
+                presenter.sensorFingerprintButtonClicked("One");
                 break;
         }
     }
@@ -53,8 +60,9 @@ public class FeatureActivity extends AppCompatActivity implements FeatureActivit
     }
 
     @Override
-    public void navigateToSensorFingerprint() {
+    public void navigateToSensorFingerprint(String traces) {
         Intent intent = new Intent(this, InstructionsActivity.class);
+        intent.putExtra("TraceCount", traces);
         startActivity(intent);
     }
 }

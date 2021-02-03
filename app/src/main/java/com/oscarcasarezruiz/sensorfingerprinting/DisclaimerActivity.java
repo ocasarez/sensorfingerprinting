@@ -2,14 +2,17 @@ package com.oscarcasarezruiz.sensorfingerprinting;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.View;
 
 import com.oscarcasarezruiz.sensorfingerprinting.presenter.DisclaimerActivityPresenter;
 
-public class DisclaimerActivity extends AppCompatActivity implements DisclaimerActivityPresenter.View, View.OnClickListener {
+import java.util.UUID;
 
+public class DisclaimerActivity extends AppCompatActivity implements DisclaimerActivityPresenter.View, View.OnClickListener {
 
     private DisclaimerActivityPresenter presenter;
 

@@ -1,6 +1,5 @@
 package com.oscarcasarezruiz.sensorfingerprinting;
 
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.annotation.SuppressLint;
@@ -10,15 +9,16 @@ import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
 
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
-import com.google.firebase.firestore.QuerySnapshot;
 import com.oscarcasarezruiz.sensorfingerprinting.models.SensorFingerprint;
 import com.oscarcasarezruiz.sensorfingerprinting.presenter.SensorFingerprintActivityPresenter;
+import com.oscarcasarezruiz.sensorfingerprinting.utils.Utils;
 
 import java.util.Date;
+import java.util.UUID;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 
 
 public class SensorFingerprintActivity extends AppCompatActivity implements SensorFingerprintActivityPresenter.View, View.OnClickListener {
@@ -47,6 +47,8 @@ public class SensorFingerprintActivity extends AppCompatActivity implements Sens
     // Fingerprint
     private SensorFingerprint mSensorFingerprint;
 
+    private String mTraceCount;
+
     @SuppressLint("LongLogTag")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -55,6 +57,7 @@ public class SensorFingerprintActivity extends AppCompatActivity implements Sens
         initViews();
         Bundle data = getIntent().getExtras();
         mSensorFingerprint = data.getParcelable("sensorFingerprint");
+        mTraceCount = data.getString("TraceCount");
         Log.d(TAG, "SensorFingerprint Local: " + mSensorFingerprint.toString());
 
         // Init Database
@@ -121,26 +124,29 @@ public class SensorFingerprintActivity extends AppCompatActivity implements Sens
     }
 
     private void writeNewSensorFingerprint(){
-        db.collection(COLLECTION_PATH).document(Long.toString(new Date().getTime())).set(mSensorFingerprint.convertSensorFingerprintToHashMap());
+        db.collection(COLLECTION_PATH + "_" + mTraceCount + "Traces").document(Long.toString(new Date().getTime())).set(mSensorFingerprint.convertSensorFingerprintToHashMap());
     }
 
     @SuppressLint("LongLogTag")
     private void readSenorFingerprints(){
-        db.collection(COLLECTION_PATH)
+        db.collection(COLLECTION_PATH + "_" + mTraceCount + "Traces")
                 .get()
                 .addOnCompleteListener(task -> {
                     boolean matchFound = false;
+                    int score = 0;
+                    SensorFingerprint sensorFingerprint = new SensorFingerprint();
                     if(task.isSuccessful()){
                         for(QueryDocumentSnapshot documentSnapshot : task.getResult()){
                             if(!documentSnapshot.exists()){
                                 break;
                             }
-                            SensorFingerprint sensorFingerprint = new SensorFingerprint(documentSnapshot.getData());
-                            Log.d(TAG, "onComplete: sensorFingerprint: " + sensorFingerprint.toString());
-                            if(sensorFingerprint.compareSensorFingerprint(mSensorFingerprint)){
-                                presenter.updateSensorFingerprint(sensorFingerprint);
+                            sensorFingerprint = new SensorFingerprint(documentSnapshot.getData());
+                            Log.d(TAG, "fromCloud: sensorFingerprint: " + sensorFingerprint.toString());
+                            int currentScore = sensorFingerprint.compareSensorFingerprint(mSensorFingerprint);
+                            Log.d(TAG, "readSenorFingerprints: currentScore: " + currentScore);
+                            if(currentScore > score && currentScore >= 26){
+                                score = currentScore;
                                 matchFound = true;
-                                break;
                             }
                         }
                     } else {
@@ -148,9 +154,11 @@ public class SensorFingerprintActivity extends AppCompatActivity implements Sens
                     }
                     presenter.updateFingerprintResult(matchFound);
                     if(!matchFound){
-                        mSensorFingerprint.setUUID(mSensorFingerprint.getDeviceModel() + new Date().getTime());
+                        mSensorFingerprint.setUUID(UUID.randomUUID().toString());
                         writeNewSensorFingerprint();
                         presenter.updateSensorFingerprint(mSensorFingerprint);
+                    } else {
+                        presenter.updateSensorFingerprint(sensorFingerprint);
                     }
                 });
     }
