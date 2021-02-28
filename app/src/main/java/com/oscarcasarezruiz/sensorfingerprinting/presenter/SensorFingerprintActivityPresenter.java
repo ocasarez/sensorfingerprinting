@@ -37,13 +37,18 @@ public class SensorFingerprintActivityPresenter {
         mView.navigateToFeatures();
     }
 
+    public void exportButtonClicked() {mView.exportFingerprint();}
 
+    public SensorFingerprint getSensorFingerprint(){
+        return mSensorFingerprint;
+    }
 
     public interface View {
         void updateActionBarTitle();
         void updateSensorFingerprintView(SensorFingerprint sensorFingerprint);
         void updateFingerprintResultView(String s);
         void navigateToFeatures();
+        void exportFingerprint();
     }
 
 }

@@ -2,11 +2,14 @@ package com.oscarcasarezruiz.sensorfingerprinting.utils;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.hardware.Sensor;
 import android.hardware.SensorManager;
 import android.util.Log;
 
 import com.oscarcasarezruiz.sensorfingerprinting.models.SensorFingerprint;
 import com.oscarcasarezruiz.sensorfingerprinting.models.SensorTrace;
+
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.UUID;
@@ -118,6 +121,25 @@ public final class Utils {
 
     public static float convertDoubleToFloat(Double value){
         return value.floatValue();
+    }
+
+    public static float[] calculateMidpoint(SensorTrace[] traces){
+        SensorTrace midpoint = new SensorTrace();
+
+        switch (traces.length){
+            case 3:
+                midpoint.setAccelerometerX((traces[0].getAccelerometerX() + traces[1].getAccelerometerY() + traces[2].getAccelerometerZ())/3);
+                midpoint.setAccelerometerY((traces[0].getAccelerometerY() + traces[1].getAccelerometerY() + traces[2].getAccelerometerY())/3);
+                midpoint.setAccelerometerZ((traces[0].getAccelerometerZ() + traces[1].getAccelerometerZ() + traces[2].getAccelerometerZ())/3);
+                break;
+            case 2:
+                midpoint.setAccelerometerX((traces[0].getAccelerometerX() + traces[1].getAccelerometerX())/2);
+                midpoint.setAccelerometerY((traces[0].getAccelerometerY() + traces[1].getAccelerometerY())/2);
+                midpoint.setAccelerometerZ((traces[0].getAccelerometerZ() + traces[1].getAccelerometerZ())/2);
+                break;
+
+        }
+        return midpoint.returnArray();
     }
 
 }

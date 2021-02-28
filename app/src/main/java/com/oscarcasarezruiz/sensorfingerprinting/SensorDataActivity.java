@@ -17,6 +17,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.Chronometer;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
@@ -33,11 +34,13 @@ import com.oscarcasarezruiz.sensorfingerprinting.utils.Utils;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.text.Format;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Locale;
 import java.util.Objects;
+import java.util.UUID;
 
 public class SensorDataActivity extends AppCompatActivity implements SensorDataActivityPresenter.View, View.OnClickListener, SensorEventListener2 {
 
@@ -47,12 +50,6 @@ public class SensorDataActivity extends AppCompatActivity implements SensorDataA
     SensorDataActivityPresenter presenter;
 
     // Sensor Info
-    private TextView mRawSensorBiasTv;
-    private TextView mSensorModelTv;
-    private TextView mSensorVendorTv;
-    private TextView mSensorMeasurementRangeTv;
-    private TextView mSensorNoiseTv;
-    private TextView mSensorResolutionTv;
 
     // Upload UI
     private TextView mUploadStatusTv;
@@ -66,14 +63,17 @@ public class SensorDataActivity extends AppCompatActivity implements SensorDataA
     private Boolean isLogging;
     private SensorManager mSensorManager;
     private Sensor mAccelerometer;
-    private ArrayList<float[]> sensorData;
+    private Sensor mGravity;
 
     // File Writer
     private FileWriter mFileWriter;
     private File mFile;
     // Firebase Storage Ref
     private StorageReference mStorageReference;
-    // Firebase Auth
+
+    // Counters
+    private int mAccelerometerCounter = 0;
+    private int mLinearAccelerationCounter = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -84,9 +84,7 @@ public class SensorDataActivity extends AppCompatActivity implements SensorDataA
 
         presenter = new SensorDataActivityPresenter(this);
         presenter.updateUploadState(UPLOAD_STATUS_STATES[0]);
-        presenter.loadSensorInfo(collectSensorInfoData());
         isLogging = false;
-        sensorData = new ArrayList<>();
 
         FirebaseApp.initializeApp(this.getApplicationContext());
         //Init Firebase Storage
@@ -97,11 +95,9 @@ public class SensorDataActivity extends AppCompatActivity implements SensorDataA
     public void onClick(View view) {
         switch (view.getId()){
             case R.id.sensordata_activity_btn_start:
-                presenter.startButtonClicked();
                 startDataCollection();
                 break;
             case R.id.sensordata_activity_btn_stop:
-                presenter.stopButtonClicked();
                 stopDataCollection();
                 break;
         }
@@ -126,36 +122,50 @@ public class SensorDataActivity extends AppCompatActivity implements SensorDataA
     }
 
     @Override
-    public void showSensorInfo(SensorInfo info) {
-        float[] rawBias = info.getSensorRawBias();
-        float[] noise = info.getSensorNoise();
-
-        mRawSensorBiasTv.setText(String.format("[%f,\n%f,\n%f]", rawBias[0], rawBias[1], rawBias[2]));
-        mSensorModelTv.setText(info.getSensorModel());
-        mSensorVendorTv.setText(info.getSensorVendor());
-        mSensorMeasurementRangeTv.setText(String.format("%f", info.getSensorMeasurementRange()));
-        mSensorNoiseTv.setText(String.format("[%f,\n%f,\n%f]", noise[0], noise[1], noise[2]));
-        mSensorResolutionTv.setText(String.format("%f", info.getSensorResolution()));
-    }
-
-
-    @Override
     public void updateUploadStateView(String s) {
         mUploadStatusTv.setText(s);
     }
 
     @Override
     public void onSensorChanged(SensorEvent sensorEvent) {
-        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ", Locale.getDefault());
         if(isLogging){
-            if(sensorEvent.sensor.getType() == Sensor.TYPE_ACCELEROMETER){
-                sensorData.add(sensorEvent.values);
-                try {
-                    mFileWriter.write(String.format("%s; %f; %f; %f\n", simpleDateFormat.format(new Date()), sensorEvent.values[0], sensorEvent.values[1], sensorEvent.values[2]));
-                } catch (IOException e){
-                    e.printStackTrace();
-                }
+            int SensorType = sensorEvent.sensor.getType();
+            float[] gravity = new float[3];
+
+            int mTargetCount = 10000;
+            if(SensorType == Sensor.TYPE_GRAVITY && mAccelerometerCounter != mTargetCount){
+                final float alpha = 0.8f;
+                // Low Pass Filter
+                gravity[0] = alpha * gravity[0] + (1 - alpha) * sensorEvent.values[0];
+                gravity[1] = alpha * gravity[1] + (1 - alpha) * sensorEvent.values[1];
+                gravity[2] = alpha * gravity[2] + (1 - alpha) * sensorEvent.values[2];
             }
+
+            if(SensorType == Sensor.TYPE_ACCELEROMETER && mAccelerometerCounter != mTargetCount){
+                writeToFile("TYPE_ACCELEROMETER", sensorEvent.values);
+                mAccelerometerCounter++;
+
+                // High Pass Filter
+                float[] calculateLinearAccelerometer = new float[3];
+                calculateLinearAccelerometer[0] = sensorEvent.values[0] - gravity[0];
+                calculateLinearAccelerometer[1] = sensorEvent.values[1] - gravity[1];
+                calculateLinearAccelerometer[2] = sensorEvent.values[2] - gravity[2];
+
+                writeToFile("CALCULATED_LINEAR_ACCELEROMETER", calculateLinearAccelerometer);
+
+            }
+
+            if(SensorType == Sensor.TYPE_LINEAR_ACCELERATION && mLinearAccelerationCounter != mTargetCount){
+                writeToFile("TYPE_LINEAR_ACCELERATION", sensorEvent.values);
+                mLinearAccelerationCounter++;
+            }
+
+            if(mAccelerometerCounter == mTargetCount && mLinearAccelerationCounter == mTargetCount){
+                Toast.makeText(this, "Auto-Stopping Collection.", Toast.LENGTH_LONG).show();
+                stopDataCollection();
+            }
+            Log.d(TAG, "mAccelerometerCounter =>: " + mAccelerometerCounter);
+            Log.d(TAG, "mLinearAccelerationCounter: => " + mLinearAccelerationCounter);
         }
     }
 
@@ -173,13 +183,6 @@ public class SensorDataActivity extends AppCompatActivity implements SensorDataA
     private void initViews(){
         Log.d(TAG, "initViews: SensorData Views Initialized");
         updateActionBarTitle();
-        mRawSensorBiasTv = (TextView) findViewById(R.id.sensordata_activity_tv_rawbiasValue);
-        mSensorModelTv = (TextView) findViewById(R.id.sensordata_activity_tv_modelValue);
-        mSensorVendorTv = (TextView) findViewById(R.id.sensordata_activity_tv_vendorValue);
-        mSensorMeasurementRangeTv = (TextView) findViewById(R.id.sensordata_activity_tv_measurementRangeValue);
-        mSensorNoiseTv = (TextView) findViewById(R.id.sensordata_activity_tv_noiseValue);
-        mSensorResolutionTv = (TextView) findViewById(R.id.sensordata_activity_tv_resolutionValue);
-
         mUploadStatusTv = (TextView) findViewById(R.id.sensordata_activity_tv_uploadstatus);
         mStartBtn = (Button) findViewById(R.id.sensordata_activity_btn_start);
         mStartBtn.setOnClickListener(this);
@@ -190,7 +193,7 @@ public class SensorDataActivity extends AppCompatActivity implements SensorDataA
         mChronometer.setOnChronometerTickListener(new Chronometer.OnChronometerTickListener() {
             @Override
             public void onChronometerTick(Chronometer chronometer) {
-                if(chronometer.getText().equals("00:10")){
+                if(chronometer.getText().equals("00:02")){
                     isLogging = true;
                 }
             }
@@ -200,24 +203,30 @@ public class SensorDataActivity extends AppCompatActivity implements SensorDataA
     private void initSensors(){
         mSensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
         mAccelerometer = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
+        mGravity = mSensorManager.getDefaultSensor(Sensor.TYPE_GRAVITY);
     }
 
     private void startDataCollection(){
+        presenter.startButtonClicked();
         mStartBtn.setEnabled(false);
         mStopBtn.setEnabled(true);
         presenter.updateUploadState(UPLOAD_STATUS_STATES[1]);
-        mFile = new File(getStorageDir(), Build.MODEL + "mobile_sensorData_" + System.currentTimeMillis() + ".csv");
+        Format f = new SimpleDateFormat("MM_dd_yyyy_hh_mm_ss", Locale.getDefault());
+        String randShortId = UUID.randomUUID().toString().replace("-","").substring(0,8);
+        mFile = new File(getStorageDir(), Build.MODEL.replace(" ", "") + "mobile_sensorData_" + f.format(new Date()) + randShortId +".csv");
         // Start Writing
         try {
             mFileWriter = new FileWriter(mFile);
-            mFileWriter.write(String.format("%s; %s; %s; %s\n", "Time", "Accelerometer_X", "Accelerometer_Y", "Accelerometer_Z"));
+            mFileWriter.write(String.format("%s; %s; %s; %s; %s\n", "Time", "Sensor", "X-Axis", "Y-Axis", "Z-Axis"));
         } catch (IOException e) {
             e.printStackTrace();
         }
         mSensorManager.registerListener(this, mAccelerometer, SensorManager.SENSOR_STATUS_ACCURACY_HIGH);
+        mSensorManager.registerListener(this, mGravity, SensorManager.SENSOR_STATUS_ACCURACY_HIGH);
     }
 
     private void stopDataCollection() {
+        presenter.stopButtonClicked();
         isLogging = false;
         mSensorManager.flush(this);
         mSensorManager.unregisterListener(this);
@@ -234,7 +243,7 @@ public class SensorDataActivity extends AppCompatActivity implements SensorDataA
 
         // Upload File to Firebase
         Uri sensorDataFile = Uri.fromFile(mFile);
-        StorageReference sensorDataRef = mStorageReference.child("mobile-sensordata/" + sensorDataFile.getLastPathSegment());
+        StorageReference sensorDataRef = mStorageReference.child("mobile-sensordata/measurements/" + sensorDataFile.getLastPathSegment());
         StorageMetadata metadata = new StorageMetadata.Builder()
                 .setContentType("text/csv")
                 .setCustomMetadata("device", Build.ID)
@@ -250,39 +259,22 @@ public class SensorDataActivity extends AppCompatActivity implements SensorDataA
             @Override
             public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
                 presenter.updateUploadState(UPLOAD_STATUS_STATES[4]); // Status Message: Succeeded
-                mFile.delete();
             }
         });
-        //mFile.delete();
-        // Calculate Sensor Noise
-        presenter.updateSensorNoise(Utils.calculateSensorNoise(sensorData));
-        // Calculate Sensor Bias
-        float[] averageMeasurement = Utils.AverageTracesMeasured(sensorData);
-        presenter.updateSensorRawBias(Utils.calculateSensorBias(new SensorTrace(averageMeasurement[0], averageMeasurement[1], averageMeasurement[2])));
         mStartBtn.setEnabled(true);
         mStopBtn.setEnabled(false);
     }
 
-    private String getStorageDir() {
-        return Objects.requireNonNull(this.getExternalFilesDir(null)).getAbsolutePath();
+    private void writeToFile(String sensor, float[] events){
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ", Locale.getDefault());
+        try {
+            mFileWriter.write(String.format("%s; %s; %f; %f; %f\n", simpleDateFormat.format(new Date()),sensor,events[0],events[1],events[2]));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
-    private SensorInfo collectSensorInfoData(){
-        SensorInfo sensorInfo = new SensorInfo();
-        // Sensor Bias - Available after data collection
-        // Sensor Model
-        if(!mAccelerometer.getName().isEmpty()){
-            sensorInfo.setSensorModel(mAccelerometer.getName());
-        }
-        // Sensor Vendor
-        if(!mAccelerometer.getVendor().isEmpty()){
-            sensorInfo.setSensorVendor(mAccelerometer.getVendor());
-        }
-        // Sensor Measurement Range
-        sensorInfo.setSensorMeasurementRange(mAccelerometer.getMaximumRange());
-        // Sensor Noise - Available after data collection
-        // Sensor Resolution
-        sensorInfo.setSensorResolution(mAccelerometer.getResolution());
-        return sensorInfo;
+    private String getStorageDir() {
+        return Objects.requireNonNull(this.getExternalFilesDir(null)).getAbsolutePath();
     }
 }

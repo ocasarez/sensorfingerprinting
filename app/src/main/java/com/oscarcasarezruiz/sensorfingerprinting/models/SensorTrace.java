@@ -1,71 +1,58 @@
 package com.oscarcasarezruiz.sensorfingerprinting.models;
 
-import android.os.Parcel;
-import android.os.Parcelable;
-
 public class SensorTrace {
     
-    private float mAccelerometerX;
-    private float mAccelerometerY;
-    private float mAccelerometerZ;
+    private float mMeasurementX;
+    private float mMeasurementY;
+    private float mMeasurementZ;
     
     public SensorTrace(){
-        this.mAccelerometerX = 0;
-        this.mAccelerometerY = 0;
-        this.mAccelerometerZ = 0;
+        this.mMeasurementX = 0;
+        this.mMeasurementY = 0;
+        this.mMeasurementZ = 0;
     }
     
-    public SensorTrace(float mAccelerometerX, float mAccelerometerY, float mAccelerometerZ){
-        this.mAccelerometerX = mAccelerometerX;
-        this.mAccelerometerY = mAccelerometerY;
-        this.mAccelerometerZ = mAccelerometerZ;
+    public SensorTrace(float mAccelerometerX, float mAccelerometerY, float mMeasurementZ){
+        this.mMeasurementX = mAccelerometerX;
+        this.mMeasurementY = mAccelerometerY;
+        this.mMeasurementZ = mMeasurementZ;
     }
 
     public float getAccelerometerX() {
-        return mAccelerometerX;
+        return mMeasurementX;
     }
 
     public void setAccelerometerX(float mAccelerometerX) {
-        this.mAccelerometerX = mAccelerometerX;
+        this.mMeasurementX = mAccelerometerX;
     }
 
     public float getAccelerometerY() {
-        return mAccelerometerY;
+        return mMeasurementY;
     }
 
     public void setAccelerometerY(float mAccelerometerY) {
-        this.mAccelerometerY = mAccelerometerY;
+        this.mMeasurementY = mAccelerometerY;
     }
 
     public float getAccelerometerZ() {
-        return mAccelerometerZ;
+        return mMeasurementZ;
     }
 
     public void setAccelerometerZ(float mAccelerometerZ) {
-        this.mAccelerometerZ = mAccelerometerZ;
+        this.mMeasurementZ = mAccelerometerZ;
     }
 
-    public boolean isEmpty(){
-        if(mAccelerometerX == 0 && mAccelerometerY == 0 && mAccelerometerZ == 0){
-            return true;
-        } else {
-            return false;
-        }
+    public float[] returnArray(){
+        return new float[]{mMeasurementX, mMeasurementY, mMeasurementZ};
     }
 
     @Override
     public String toString() {
         return "SensorTrace{" +
-                "X=" + this.mAccelerometerX +
-                ", Y=" + this.mAccelerometerY +
-                ", Z=" + this.mAccelerometerZ +
+                "X=" + this.mMeasurementX +
+                ", Y=" + this.mMeasurementY +
+                ", Z=" + this.mMeasurementZ +
                 '}';
-    }
-
-    protected SensorTrace(Parcel in) {
-        mAccelerometerX = in.readFloat();
-        mAccelerometerY = in.readFloat();
-        mAccelerometerZ = in.readFloat();
     }
 
 }

@@ -50,20 +50,27 @@
     <string name="sensorfingerprint_internalD">Internal ID</string>
     <string name="sensorfingerprint_dataTime"><![CDATA[Entry Date & Time]]></string>
     <string name="sensorfingerprint_deviceModel">Device Model</string>
-    <string name="sensorfingerprint_sensorModel">Sensor Model</string>
-    <string name="sensorfingerprint_sensorVender">Sensor Vendor</string>
-    <string name="sensorfingerprint_sensorMeasurementRange">Sensor Measurement Range</string>
-    <string name="sensorfingerprint_sensorNoise">Sensor Noise</string>
-    <string name="sensorfingerprint_sensorResolution">Sensor Resolution</string>
-    <string name="sensorfingerprint_sensorSensitivity">Sensor Sensitivity</string>
-    <string name="sensorfingerprint_sensorLinearity">Sensor Linearity</string>
+    <string name="sensorfingerprint_sensorModel">Accelerometer Model</string>
+    <string name="sensorfingerprint_sensorVender">Accelerometer Vendor</string>
+    <string name="sensorfingerprint_sensorMeasurementRange">Accelerometer Measurement Range</string>
+    <string name="sensorfingerprint_sensorNoise">Accelerometer Noise</string>
+    <string name="sensorfingerprint_sensorResolution">Accelerometer Resolution</string>
+    <string name="sensorfingerprint_sensorSensitivity">Accelerometer Sensitivity</string>
+    <string name="sensorfingerprint_sensorLinearity">Accelerometer Linearity</string>
     <string name="sensorfingerprint_sensorPlacement">Sensor Placement</string>
     <string name="sensorfingerprint_sensorVE3Calibration">Sensor VE3 Calibration</string>
     <string name="sensorfingerprint_sensorSampling">Sensor Sampling</string>
     <string name="sensorfingerprint_startOver">Start Over</string>
-    <string name="sensordata_rawbias">Sensor Raw Bias</string>
-    <string name="sensor_raw_bias">Sensor Raw Bias</string>
+    <string name="sensordata_rawbias">Accelerometer Raw Bias</string>
+    <string name="sensor_raw_bias">Accelerometer Raw Bias</string>
     <string name="uuid">UUID</string>
     <string name="device_uuid">Device UUID:</string>
+    <string name="gyroscope_model">Gyroscope Model</string>
+    <string name="gyroscope_vendor">Gyroscope Vendor</string>
+    <string name="gyroscope_measurement_range">Gyroscope Measurement Range</string>
+    <string name="gyroscope_resolution">Gyroscope Resolution</string>
+    <string name="linear_acceleration">Device Linear Acceleration</string>
+    <string name="calculated_linear_acceleration">Calculated Linear Acceleration</string>
+    <string name="export_fingerprint">Export Fingerprint</string>
 
 </resources>
