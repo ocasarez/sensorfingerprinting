@@ -9,9 +9,8 @@
     <string name="disclaimer_accept">Accept</string>
     <string name="features_title">Features</string>
     <string name="features_sensordata">Sensor Data</string>
-    <string name="features_sensorfingerprint_3trace">Sensor Fingerprint (3 Traces)</string>
-    <string name="features_sensorfingerprint_2trace">Sensor Fingerprint (2 Traces)</string>
-    <string name="features_sensorfingerprint_1trace">Sensor Fingerprint (1 Trace)</string>
+    <string name="features_sensorfingerprint_1trace">Register Sensor Fingerprint</string>
+    <string name="features_sensorfingerprint_identify">Identify Device</string>
     <string name="sensordata_title">Sensor Data</string>
     <string name="sensordata_model">Sensor Model</string>
     <string name="sensordata_vendor">Sensor Vendor</string>
@@ -34,17 +33,7 @@
     <string name="trace_3_result">Trace #3 Result:</string>
     <string name="instructions_title">Instructions</string>
     <string name="instructions_collectTrace">Collect Trace</string>
-    <string name="instructions_next">Next</string>
     <string name="instructions_goToSensorFingerprint">Sensor Fingerprint Results</string>
-    <string name="secondInstructions_message">
-        <p dir="ltr">1. Press <b>Collect Trace</b>.</p>
-        <p dir="ltr">2. Place phone face down on a flat surface.</p>
-        <p><b>Note: The phone will vibrate to indicate trace collection is complete.</b></p>
-    </string>
-    <string name="thirdInstructions_message">
-        <p dir="ltr">1. Hold phone vertically.</p>
-        <p dir="ltr">2. Press <b>Collect Trace</b>.</p>
-    </string>
     <string name="sensorfingerprint_title">Sensor Fingerprint</string>
     <string name="sensorfingerprint_result">Fingerprint Result: </string>
     <string name="sensorfingerprint_internalD">Internal ID</string>

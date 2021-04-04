@@ -12,13 +12,18 @@ public class FeatureActivityPresenter {
         mView.navigateToSensorDate();
     }
 
-    public void sensorFingerprintButtonClicked(String trace){
-        mView.navigateToSensorFingerprint(trace);
+    public void sensorFingerprintButtonClicked(){
+        mView.navigateToSensorFingerprint();
+    }
+
+    public void sensorIdentifyDeviceButtonClicked(){
+        mView.navigateToIdentifyDevice();
     }
 
     public interface View {
         void updateActionBarTitle();
         void navigateToSensorDate();
-        void navigateToSensorFingerprint(String trace);
+        void navigateToSensorFingerprint();
+        void navigateToIdentifyDevice();
     }
 }

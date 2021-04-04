@@ -20,28 +20,18 @@
             android:textStyle="bold" />
 
         <Button
-            android:id="@+id/feature_activity_btn_sensorfingerprint_3trace"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:fontFamily="@font/roboto"
-            android:text="@string/features_sensorfingerprint_3trace"
-            android:textStyle="bold" />
-
-        <Button
-            android:id="@+id/feature_activity_btn_sensorfingerprint_2trace"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:fontFamily="@font/roboto"
-            android:text="@string/features_sensorfingerprint_2trace"
-            android:textStyle="bold" />
-
-        <Button
             android:id="@+id/feature_activity_btn_sensorfingerprint_1trace"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:fontFamily="@font/roboto"
             android:text="@string/features_sensorfingerprint_1trace"
             android:textStyle="bold" />
+
+        <Button
+            android:id="@+id/feature_activity_btn_identifyDevice"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/features_sensorfingerprint_identify" />
 
     </LinearLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -6,43 +6,32 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
-import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
-import com.google.firebase.firestore.QuerySnapshot;
 import com.google.firebase.storage.FirebaseStorage;
-import com.google.firebase.storage.StorageMetadata;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 import com.google.gson.Gson;
-import com.google.gson.JsonObject;
 import com.oscarcasarezruiz.sensorfingerprinting.models.SensorFingerprint;
 import com.oscarcasarezruiz.sensorfingerprinting.presenter.SensorFingerprintActivityPresenter;
-import com.oscarcasarezruiz.sensorfingerprinting.utils.Utils;
 
-import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicReference;
 
 
 public class SensorFingerprintActivity extends AppCompatActivity implements SensorFingerprintActivityPresenter.View, View.OnClickListener {
@@ -55,14 +44,14 @@ public class SensorFingerprintActivity extends AppCompatActivity implements Sens
     // UI Elements
     private TextView mResult;
     private TextView mSensorFingerprintResult;
+    private TextView mMatchScore;
 
     // Database
     private FirebaseFirestore db;
 
     // Fingerprint
     private SensorFingerprint mSensorFingerprint;
-    private String mTraceCount;
-
+    private boolean mIdentify;
     // File Writer
     private FileWriter mFileWriter;
     private File mFile;
@@ -77,7 +66,7 @@ public class SensorFingerprintActivity extends AppCompatActivity implements Sens
         initViews();
         Bundle data = getIntent().getExtras();
         mSensorFingerprint = data.getParcelable("sensorFingerprint");
-        mTraceCount = data.getString("TraceCount");
+        mIdentify = data.getBoolean("Identify");
         Log.d(TAG, "SensorFingerprint Local: " + mSensorFingerprint.toString());
 
         // Init Database
@@ -85,7 +74,14 @@ public class SensorFingerprintActivity extends AppCompatActivity implements Sens
         mStorageReference = FirebaseStorage.getInstance().getReference();
 
         presenter = new SensorFingerprintActivityPresenter(this);
-        readSenorFingerprints();
+
+        if(mIdentify){ // Identify Device
+            identifyDevice();
+        } else { // Create new Fingerprint
+            mSensorFingerprint.setUUID(UUID.randomUUID().toString());
+            writeNewSensorFingerprint();
+            presenter.updateSensorFingerprint(mSensorFingerprint);
+        }
     }
 
     @Override
@@ -113,6 +109,12 @@ public class SensorFingerprintActivity extends AppCompatActivity implements Sens
     }
 
     @Override
+    public void updateScoreResult(int score) {
+        int percentageScore = (score * 2);
+        mMatchScore.setText("Match Score: " + percentageScore + " %");
+    }
+
+    @Override
     public void navigateToFeatures() {
         Intent intent = new Intent(this, FeatureActivity.class);
         startActivity(intent);
@@ -124,21 +126,22 @@ public class SensorFingerprintActivity extends AppCompatActivity implements Sens
         findViewById(R.id.sensorfingerprint_activity_btn_exportFingerprint).setOnClickListener(this);
         mResult = findViewById(R.id.sensorfingerprint_activity_tv_result);
         mSensorFingerprintResult = findViewById(R.id.sensorfingerprint_activity_tv_fingerprintResult);
+        mMatchScore = findViewById(R.id.sensorfingerprint_activity_tv_matchScore);
     }
 
     private void writeNewSensorFingerprint(){
-        db.collection(COLLECTION_PATH + "_" + mTraceCount + "Traces").document(Long.toString(new Date().getTime())).set(mSensorFingerprint.convertSensorFingerprintToHashMap());
+        db.collection(COLLECTION_PATH + "Smartphone").document(Long.toString(new Date().getTime())).set(mSensorFingerprint.convertSensorFingerprintToHashMap());
     }
 
     @SuppressLint("LongLogTag")
-    private void readSenorFingerprints(){
-        db.collection(COLLECTION_PATH + "_" + mTraceCount + "Traces")
+    private void identifyDevice(){
+        db.collection(COLLECTION_PATH + "Smartphone")
                 .get()
                 .addOnCompleteListener(task -> {
                     boolean matchFound = false;
-                    int score = 0;
                     SensorFingerprint currentSensorFingerprint;
                     SensorFingerprint resultSensorFingerprint = new SensorFingerprint();
+                    int score = 0;
                     if(task.isSuccessful()){
                         for(QueryDocumentSnapshot documentSnapshot : task.getResult()){
                             if(!documentSnapshot.exists()){
@@ -148,7 +151,7 @@ public class SensorFingerprintActivity extends AppCompatActivity implements Sens
                             Log.d(TAG, "fromCloud: sensorFingerprint: " + currentSensorFingerprint.toString());
                             int currentScore = currentSensorFingerprint.compareSensorFingerprint(mSensorFingerprint);
                             Log.d(TAG, "readSenorFingerprints: currentScore: " + currentScore);
-                            if(currentScore > score && currentScore >= 68){
+                            if(currentScore > score){
                                 score = currentScore;
                                 matchFound = true;
                                 resultSensorFingerprint = currentSensorFingerprint;
@@ -158,13 +161,9 @@ public class SensorFingerprintActivity extends AppCompatActivity implements Sens
                         Log.d(TAG, "Error getting documents: ", task.getException());
                     }
                     presenter.updateFingerprintResult(matchFound);
-                    if(!matchFound){
-                        mSensorFingerprint.setUUID(UUID.randomUUID().toString());
-                        writeNewSensorFingerprint();
-                        presenter.updateSensorFingerprint(mSensorFingerprint);
-                    } else {
-                        presenter.updateSensorFingerprint(resultSensorFingerprint);
-                    }
+                    int finalScore = resultSensorFingerprint.compareSensorFingerprint(mSensorFingerprint);
+                    presenter.updateFingerprintScoreResult(finalScore);
+                    presenter.updateSensorFingerprint(resultSensorFingerprint);
                 });
     }
 

@@ -15,93 +15,79 @@ public class SensorFingerprint implements Parcelable {
     private String mUUID;
     // Device Data
     private String mDeviceModel;
+    private String mDeviceMfg;
+    private String mDeviceOS;
     // Accelerometer Data
     private String mAccelerometerModel;
     private String mAccelerometerVendor;
-    private float mAccelerometerMeasurementRange;
-    private float mAccelerometerResolution;
     private float mAccelerometerSensitivity;
     private float mAccelerometerLinearity;
     private float[] mAccelerometerNoise;
-    private float[] mAccelerometerRawBias;
-    private float[] mAccelerometerMidPoint;
-    // Gyroscope Data
-    private String mGyroscopeModel;
-    private String mGyroscopeVendor;
-    private float mGyroscopeResolution;
-    private float mGyroscopeMeasurementRange;
-    // Linear Acceleration Data
-    private float[] mFilteredAccelerometerData;
-
+    private float[] mAccelerometerBias;
+    private float[] mAccelerometerAvg;
+    private float[] mAccelerometerMin;
+    private float[] mAccelerometerMax;
+    private float[] mAccelerometerStandardDev;
 
     public SensorFingerprint(){
         mAccelerometerNoise = new float[3];
-        mAccelerometerRawBias = new float[3];
-        mFilteredAccelerometerData = new float[3];
+        mAccelerometerBias = new float[3];
+        mAccelerometerAvg = new float[3];
+        mAccelerometerMin = new float[3];
+        mAccelerometerMax = new float[3];
+        mAccelerometerStandardDev = new float[3];
     }
 
     public SensorFingerprint(Map<String, Object> document){
-        this.mUUID = (String) document.get("UUID");
+        this.mUUID = (String) document.get("Fingerprint ID");
         // Device Data
-        this.mDeviceModel = (String) document.get("deviceModel");
+        this.mDeviceModel = (String) ((Map) document.get("Device Data")).get("Model");
+        this.mDeviceMfg = (String) ((Map) document.get("Device Data")).get("Manufacturer");
+        this.mDeviceOS = (String) ((Map) document.get("Device Data")).get("OS Version");
         // Accelerometer Data
-        this.mAccelerometerModel = (String) document.get("accelerometerModel");
-        this.mAccelerometerVendor = (String) document.get("accelerometerVendor");
-        this.mAccelerometerMeasurementRange = Utils.convertDoubleToFloat((Double) document.get("accelerometerMeasurementRange"));
-        ArrayList<Double> doubleList1 = (ArrayList<Double>) document.get("accelerometerNoise");
-        this.mAccelerometerNoise = new float[doubleList1.size()];
-        int i = 0;
-        for(Double d : doubleList1){
-            this.mAccelerometerNoise[i++] = Utils.convertDoubleToFloat(d);
-        }
-        this.mAccelerometerResolution = Utils.convertDoubleToFloat((Double)document.get("accelerometerResolution"));
-        this.mAccelerometerSensitivity = Utils.convertDoubleToFloat((Double)document.get("accelerometerSensitivity"));
-        this.mAccelerometerLinearity = Utils.convertDoubleToFloat((Double) document.get("accelerometerLinearity"));
-        ArrayList<Double> doubleList2 = (ArrayList<Double>) document.get("accelerometerRawBias");
-        this.mAccelerometerRawBias = new float[doubleList2.size()];
-        i = 0;
-        for(Double d: doubleList2){
-            this.mAccelerometerRawBias[i++] = Utils.convertDoubleToFloat(d);
-        }
-        ArrayList<Double> doubleList3 = (ArrayList<Double>) document.get("accelerometerMidPoint");
-        this.mAccelerometerMidPoint = new float[doubleList3.size()];
-        i = 0;
-        for(Double d: doubleList3){
-            this.mAccelerometerMidPoint[i++] = Utils.convertDoubleToFloat(d);
-        }
-        // Gyroscope Data
-        this.mGyroscopeModel = (String) document.get("gyroscopeModel");
-        this.mGyroscopeVendor = (String) document.get("gyroscopeVendor");
-        this.mGyroscopeResolution = Utils.convertDoubleToFloat((Double)document.get("gyroscopeResolution"));
-        this.mGyroscopeMeasurementRange = Utils.convertDoubleToFloat((Double) document.get("gyroscopeMeasurementRange"));
-        ArrayList<Double> doubleList5 = (ArrayList<Double>) document.get("filteredAccelerometerData");
-        this.mFilteredAccelerometerData =  new float[doubleList5.size()];
-        i = 0;
-        for(Double d: doubleList5){
-            this.mFilteredAccelerometerData[i++] = Utils.convertDoubleToFloat(d);
+        this.mAccelerometerModel = (String) ((Map) document.get("Accelerometer Data")).get("Model");
+        this.mAccelerometerVendor = (String) ((Map) document.get("Accelerometer Data")).get("Vendor");
+        this.mAccelerometerLinearity = Utils.convertDoubleToFloat((Double) ((Map) document.get("Accelerometer Data")).get("Linearity"));
+        this.mAccelerometerSensitivity = Utils.convertDoubleToFloat((Double) ((Map) document.get("Accelerometer Data")).get("Sensitivity"));
+        ArrayList<Double> arrayListNoise = (ArrayList<Double>) ((Map) document.get("Accelerometer Data")).get("Noise");
+        ArrayList<Double> arrayListBias = (ArrayList<Double>) ((Map) document.get("Accelerometer Data")).get("Bias");
+        ArrayList<Double> arrayListAverage = (ArrayList<Double>) ((Map) document.get("Accelerometer Data")).get("Average");
+        ArrayList<Double> arrayListMinimum = (ArrayList<Double>) ((Map) document.get("Accelerometer Data")).get("Minimum");
+        ArrayList<Double> arrayListMaximum = (ArrayList<Double>) ((Map) document.get("Accelerometer Data")).get("Maximum");
+        ArrayList<Double> arrayListStandardDev = (ArrayList<Double>) ((Map) document.get("Accelerometer Data")).get("Standard Deviation");
+        this.mAccelerometerNoise = new float[3];
+        this.mAccelerometerAvg = new float[3];
+        this.mAccelerometerBias = new float[3];
+        this.mAccelerometerMin = new float[3];
+        this.mAccelerometerMax = new float[3];
+        this.mAccelerometerStandardDev = new float[3];
+        for(int i = 0; i < 3; i++){
+            this.mAccelerometerNoise[i] = Utils.convertDoubleToFloat(arrayListNoise.get(i));
+            this.mAccelerometerBias[i] = Utils.convertDoubleToFloat(arrayListBias.get(i));
+            this.mAccelerometerAvg[i] = Utils.convertDoubleToFloat(arrayListAverage.get(i));
+            this.mAccelerometerMin[i] = Utils.convertDoubleToFloat(arrayListMinimum.get(i));
+            this.mAccelerometerMax[i] = Utils.convertDoubleToFloat(arrayListMaximum.get(i));
+            this.mAccelerometerStandardDev[i] = Utils.convertDoubleToFloat(arrayListStandardDev.get(i));
         }
     }
 
     protected SensorFingerprint(Parcel in) {
         // Device Data
         mDeviceModel = in.readString();
+        mDeviceMfg = in.readString();
+        mDeviceOS = in.readString();
         // Accelerometer Data
         mAccelerometerModel = in.readString();
         mAccelerometerVendor = in.readString();
-        mAccelerometerMeasurementRange = in.readFloat();
         mAccelerometerNoise = in.createFloatArray();
-        mAccelerometerResolution = in.readFloat();
         mAccelerometerSensitivity = in.readFloat();
         mAccelerometerLinearity = in.readFloat();
-        mAccelerometerRawBias = in.createFloatArray();
-        mAccelerometerMidPoint = in.createFloatArray();
-        // Gyroscope Data
-        mGyroscopeModel = in.readString();
-        mGyroscopeVendor = in.readString();
-        mGyroscopeResolution = in.readFloat();
-        mGyroscopeMeasurementRange = in.readFloat();
-        // Linear Acceleration Data
-        mFilteredAccelerometerData = in.createFloatArray();
+        mAccelerometerBias = in.createFloatArray();
+        mAccelerometerAvg = in.createFloatArray();
+        mAccelerometerMin = in.createFloatArray();
+        mAccelerometerMax = in.createFloatArray();
+        mAccelerometerStandardDev = in.createFloatArray();
+
     }
 
     public static final Creator<SensorFingerprint> CREATOR = new Creator<SensorFingerprint>() {
@@ -118,27 +104,27 @@ public class SensorFingerprint implements Parcelable {
 
     public Map<String, Object> convertSensorFingerprintToHashMap(){
         Map<String, Object> docData = new HashMap<>();
-        docData.put("UUID", this.mUUID);
+        docData.put("Fingerprint ID", this.mUUID);
         // Device Data
-        docData.put("deviceModel", this.mDeviceModel);
+        Map<String, Object> deviceData = new HashMap<>();
+        deviceData.put("Model", this.mDeviceModel);
+        deviceData.put("Manufacturer", this.mDeviceMfg);
+        deviceData.put("OS Version", this.mDeviceOS);
         // Accelerometer Data
-        docData.put("accelerometerModel", this.mAccelerometerModel);
-        docData.put("accelerometerVendor", this.mAccelerometerVendor);
-        docData.put("accelerometerMeasurementRange", this.mAccelerometerMeasurementRange);
-        docData.put("accelerometerNoise", Arrays.asList(this.mAccelerometerNoise[0], this.mAccelerometerNoise[1], this.mAccelerometerNoise[2]));
-        docData.put("accelerometerResolution", this.mAccelerometerResolution);
-        docData.put("accelerometerSensitivity", this.mAccelerometerSensitivity);
-        docData.put("accelerometerLinearity", this.mAccelerometerLinearity);
-        docData.put("accelerometerRawBias", Arrays.asList(this.mAccelerometerRawBias[0], this.mAccelerometerRawBias[1], this.mAccelerometerRawBias[2]));
-        docData.put("accelerometerMidPoint", Arrays.asList(this.mAccelerometerMidPoint[0], this.mAccelerometerMidPoint[1], this.mAccelerometerMidPoint[2]));
-        // Gyroscope Data
-        docData.put("gyroscopeModel", this.mGyroscopeModel);
-        docData.put("gyroscopeVendor", this.mGyroscopeVendor);
-        docData.put("gyroscopeResolution", this.mGyroscopeResolution);
-        docData.put("gyroscopeMeasurementRange", this.mGyroscopeMeasurementRange);
-        // Linear Acceleration Data
-        docData.put("filteredAccelerometerData", Arrays.asList(this.mFilteredAccelerometerData[0], this.mFilteredAccelerometerData[1], this.mFilteredAccelerometerData[2]));
+        Map<String, Object> accelerometerData = new HashMap<>();
+        accelerometerData.put("Model", this.mAccelerometerModel);
+        accelerometerData.put("Vendor", this.mAccelerometerVendor);
+        accelerometerData.put("Noise", Arrays.asList(this.mAccelerometerNoise[0], this.mAccelerometerNoise[1], this.mAccelerometerNoise[2]));
+        accelerometerData.put("Sensitivity", this.mAccelerometerSensitivity);
+        accelerometerData.put("Linearity", this.mAccelerometerLinearity);
+        accelerometerData.put("Bias", Arrays.asList(this.mAccelerometerBias[0], this.mAccelerometerBias[1], this.mAccelerometerBias[2]));
+        accelerometerData.put("Average", Arrays.asList(this.mAccelerometerAvg[0],this.mAccelerometerAvg[1], this.mAccelerometerAvg[2]));
+        accelerometerData.put("Minimum", Arrays.asList(this.mAccelerometerMin[0],this.mAccelerometerMin[1], this.mAccelerometerMin[2]));
+        accelerometerData.put("Maximum", Arrays.asList(this.mAccelerometerMax[0],this.mAccelerometerMax[1], this.mAccelerometerMax[2]));
+        accelerometerData.put("Standard Deviation", Arrays.asList(this.mAccelerometerStandardDev[0],this.mAccelerometerStandardDev[1], this.mAccelerometerStandardDev[2]));
 
+        docData.put("Device Data", deviceData);
+        docData.put("Accelerometer Data", accelerometerData);
         return docData;
     }
 
@@ -147,79 +133,65 @@ public class SensorFingerprint implements Parcelable {
         float percentage = 0.05f;
 
         // Device Data
-        // Device Model - 1
+        // Model - 1
         if(this.mDeviceModel.equals(o.getDeviceModel())){
             weight += 1;
         }
+        // Manufacturer - 1
+        if(this.mDeviceMfg.equals(o.getDeviceMfg())){
+            weight += 1;
+        }
+        // OS - 1
+        if(this.mDeviceOS.equals(o.getDeviceOS())){
+            weight += 1;
+        }
+
         // Accelerometer Data
-        // Accelerometer Sensitivity - 14
-        if(Utils.percentageRange("Accelerometer Sensitivity", this.mAccelerometerSensitivity, o.getSensorSensitivity(), percentage)){
-            weight += 14;
-        }
-        // Accelerometer Linearity - 13
-        if(Utils.percentageRange("Accelerometer Linearity", this.mAccelerometerLinearity, o.getSensorLinearity(), percentage)){
-            weight += 13;
-        }
-        // Accelerometer Model - 2
+        // Model - 1
         if(this.mAccelerometerModel.equals(o.getSensorModel())){
+            weight += 1;
+        }
+        // Vendor - 1
+        if(this.mAccelerometerVendor.equals(o.getSensorVendor())){
+            weight += 1;
+        }
+        // Noise - 1
+        boolean compareZ = Utils.percentageRange("Noise - Z", this.mAccelerometerNoise[2], o.getSensorNoise()[2], percentage);
+        if(compareZ){
+            weight += 1;
+        }
+        // Minimum - 2
+        compareZ = Utils.percentageRange("Minimum - Z", this.mAccelerometerMin[2], o.getAccelerometerMin()[2], percentage);
+        if(compareZ){
             weight += 2;
         }
-        // Accelerometer Vendor - 4
-        if(this.mAccelerometerVendor.equals(o.getSensorVendor())){
+        // Maximum - 2
+        compareZ = Utils.percentageRange("Maximum - Z", this.mAccelerometerMax[2], o.getAccelerometerMax()[2], percentage);
+        if(compareZ){
+            weight += 2;
+        }
+        // Bias - 4
+        compareZ = Utils.percentageRange("Bias - Z", this.mAccelerometerBias[2], o.getSensorRawBias()[2], percentage);
+        if(compareZ){
             weight += 4;
         }
-        // Accelerometer Measurement Range - 8
-        if(Utils.percentageRange("Accelerometer Measurement Range", this.mAccelerometerMeasurementRange, o.getSensorMeasurementRange(), percentage)){
+        // Standard Deviation - 8
+        compareZ = Utils.percentageRange("Standard Deviation - Z", this.mAccelerometerStandardDev[2], o.getAccelerometerStandardDev()[2], percentage);
+        if(compareZ){
             weight += 8;
         }
-        // Accelerometer Noise - 11
-        boolean compareX = Utils.percentageRange("Accelerometer Noise X Axis", this.mAccelerometerNoise[0], o.getSensorNoise()[0], percentage);
-        boolean compareY = Utils.percentageRange("Accelerometer Noise Y Axis", this.mAccelerometerNoise[1], o.getSensorNoise()[1], percentage);
-        boolean compareZ = Utils.percentageRange("Accelerometer Noise Z Axis", this.mAccelerometerNoise[2], o.getSensorNoise()[2], percentage);
-        if(compareX && compareY && compareZ){
-            weight += 11;
+        // Average - 8
+        compareZ = Utils.percentageRange("Average - Z", this.mAccelerometerAvg[2], o.getAccelerometerAvg()[2], percentage);
+        if(compareZ){
+            weight += 8;
         }
-        // Accelerometer Resolution - 6
-        if(Utils.percentageRange("Accelerometer Resolution", this.mAccelerometerResolution, o.getSensorResolution(), percentage)){
-            weight += 6;
-        }
-        // Accelerometer Bias - 10
-        compareX = Utils.percentageRange("Accelerometer Raw Bias X Axis", this.mAccelerometerRawBias[0], o.getSensorRawBias()[0], percentage);
-        compareY = Utils.percentageRange("Accelerometer Raw Bias Y Axis", this.mAccelerometerRawBias[1], o.getSensorRawBias()[1], percentage);
-        compareZ = Utils.percentageRange("Accelerometer Raw Bias Z Axis", this.mAccelerometerRawBias[2], o.getSensorRawBias()[2], percentage);
-        if(compareX && compareY && compareZ){
+        // Sensitivity - 10
+        if(Utils.percentageRange("Sensitivity", this.mAccelerometerSensitivity, o.getSensorSensitivity(), percentage)){
             weight += 10;
         }
-        // Accelerometer Midpoint - 12
-        compareX = Utils.percentageRange("Accelerometer Midpoint X Axis", this.mAccelerometerMidPoint[0], o.getAccelerometerMidPoint()[0], percentage);
-        compareY = Utils.percentageRange("Accelerometer Midpoint Y Axis", this.mAccelerometerMidPoint[1], o.getAccelerometerMidPoint()[1], percentage);
-        compareZ = Utils.percentageRange("Accelerometer Midpoint Z Axis", this.mAccelerometerMidPoint[2], o.getAccelerometerMidPoint()[2], percentage);
-        if(compareX && compareY && compareZ){
-            weight += 12;
-        }
-        // Gyroscope Data
-        // Gyroscope Model - 3
-        if(this.mGyroscopeModel.equals(o.getGyroscopeModel())){
-            weight += 3;
-        }
-        // Gyroscope Vendor - 5
-        if(this.mGyroscopeVendor.equals(o.getGyroscopeVendor())){
-            weight += 5;
-        }
-        // Gyroscope Resolution - 7
-        if(Utils.percentageRange("Gyroscope Resolution", this.mGyroscopeResolution, o.getGyroscopeResolution(), percentage)){
-            weight += 7;
-        }
-        // Gyroscope Measurement Range - 9
-        if(Utils.percentageRange("Gyroscope Measurement Range", this.mGyroscopeMeasurementRange, o.getGyroscopeMeasurementRange(), percentage)){
-            weight += 9;
-        }
-        // Filtered Acceleration Data - 15
-        compareX = Utils.percentageRange("Filtered Acceleration Data X Axis", this.mFilteredAccelerometerData[0], o.getFilteredAccelerometerData()[0], percentage);
-        compareY = Utils.percentageRange("Filtered Acceleration Data Y Axis", this.mFilteredAccelerometerData[1], o.getFilteredAccelerometerData()[1], percentage);
-        compareZ = Utils.percentageRange("Filtered Acceleration Data Z Axis", this.mFilteredAccelerometerData[2], o.getFilteredAccelerometerData()[2], percentage);
-        if(compareX && compareY && compareZ){
-            weight += 15;
+        // Linearity - 10
+        if(Utils.percentageRange("Linearity", this.mAccelerometerLinearity, o.getSensorLinearity(), percentage)){
+            weight += 10;
         }
 
         return weight;
@@ -252,28 +224,12 @@ public class SensorFingerprint implements Parcelable {
         this.mAccelerometerVendor = mSensorVendor;
     }
 
-    public float getSensorMeasurementRange() {
-        return mAccelerometerMeasurementRange;
-    }
-
-    public void setSensorMeasurementRange(float mSensorMeasurementRange) {
-        this.mAccelerometerMeasurementRange = mSensorMeasurementRange;
-    }
-
     public float[] getSensorNoise() {
         return mAccelerometerNoise;
     }
 
     public void setSensorNoise(float[] mSensorNoise) {
         this.mAccelerometerNoise = mSensorNoise;
-    }
-
-    public float getSensorResolution() {
-        return mAccelerometerResolution;
-    }
-
-    public void setSensorResolution(float mSensorResolution) {
-        this.mAccelerometerResolution = mSensorResolution;
     }
 
     public float getSensorSensitivity() {
@@ -293,11 +249,11 @@ public class SensorFingerprint implements Parcelable {
     }
 
     public float[] getSensorRawBias() {
-        return mAccelerometerRawBias;
+        return mAccelerometerBias;
     }
 
     public void setSensorRawBias(float[] mSensorRawBias) {
-        this.mAccelerometerRawBias = mSensorRawBias;
+        this.mAccelerometerBias = mSensorRawBias;
     }
 
     public String getUUID() {
@@ -308,73 +264,72 @@ public class SensorFingerprint implements Parcelable {
         this.mUUID = mUUID;
     }
 
-    public String getGyroscopeModel() {
-        return mGyroscopeModel;
+
+    public String getDeviceMfg() {
+        return mDeviceMfg;
     }
 
-    public void setGyroscopeModel(String mGyroscopeModel) {
-        this.mGyroscopeModel = mGyroscopeModel;
+    public void setDeviceMfg(String mDeviceMfg) {
+        this.mDeviceMfg = mDeviceMfg;
     }
 
-    public String getGyroscopeVendor() {
-        return mGyroscopeVendor;
+    public String getDeviceOS() {
+        return mDeviceOS;
     }
 
-    public void setGyroscopeVendor(String mGyroscopeVendor) {
-        this.mGyroscopeVendor = mGyroscopeVendor;
+    public void setDeviceOS(String mDeviceOS) {
+        this.mDeviceOS = mDeviceOS;
     }
 
-    public float getGyroscopeResolution() {
-        return mGyroscopeResolution;
+    public float[] getAccelerometerAvg() {
+        return mAccelerometerAvg;
     }
 
-    public void setGyroscopeResolution(float mGyroscopeResolution) {
-        this.mGyroscopeResolution = mGyroscopeResolution;
+    public void setAccelerometerAvg(float[] mAccelerometerAvg) {
+        this.mAccelerometerAvg = mAccelerometerAvg;
     }
 
-    public float getGyroscopeMeasurementRange() {
-        return mGyroscopeMeasurementRange;
+    public float[] getAccelerometerMin() {
+        return mAccelerometerMin;
     }
 
-    public void setGyroscopeMeasurementRange(float mGyroscopeMeasurementRange) {
-        this.mGyroscopeMeasurementRange = mGyroscopeMeasurementRange;
+    public void setAccelerometerMin(float[] mAccelerometerMin) {
+        this.mAccelerometerMin = mAccelerometerMin;
     }
 
-    public float[] getFilteredAccelerometerData() {
-        return mFilteredAccelerometerData;
+    public float[] getAccelerometerMax() {
+        return mAccelerometerMax;
     }
 
-    public void setFilteredAccelerometerData(float[] mFilteredAccelerometerData) {
-        this.mFilteredAccelerometerData = mFilteredAccelerometerData;
+    public void setAccelerometerMax(float[] mAccelerometerMax) {
+        this.mAccelerometerMax = mAccelerometerMax;
     }
 
-    public float[] getAccelerometerMidPoint() {
-        return mAccelerometerMidPoint;
+    public float[] getAccelerometerStandardDev() {
+        return mAccelerometerStandardDev;
     }
 
-    public void setAccelerometerMidPoint(float[] mAccelerometerMidPoint) {
-        this.mAccelerometerMidPoint = mAccelerometerMidPoint;
+    public void setAccelerometerStandardDev(float[] mAccelerometerStandardDev) {
+        this.mAccelerometerStandardDev = mAccelerometerStandardDev;
     }
 
     @Override
     public String toString() {
         return "SensorFingerprint" + '\n' +
-                "UUID\n" + mUUID + '\n' +
+                "Fingerprint ID\n" + mUUID + '\n' +
                 "DeviceModel\n" + mDeviceModel + '\n' +
+                "DeviceMfg\n" + mDeviceMfg + '\n' +
+                "DeviceOS\n" + mDeviceOS + '\n' +
                 "AccelerometerModel\n" + mAccelerometerModel + '\n' +
                 "AccelerometerVendor\n" + mAccelerometerVendor + '\n' +
-                "AccelerometerMeasurementRange\n" + mAccelerometerMeasurementRange + '\n' +
-                "AccelerometerResolution\n" + mAccelerometerResolution + '\n' +
                 "AccelerometerSensitivity\n" + mAccelerometerSensitivity + '\n' +
                 "AccelerometerLinearity\n" + mAccelerometerLinearity + '\n' +
                 "AccelerometerNoise\n" + Arrays.toString(mAccelerometerNoise) + '\n' +
-                "AccelerometerRawBias\n" + Arrays.toString(mAccelerometerRawBias) + '\n' +
-                "AccelerometerMidPoint\n" + Arrays.toString(mAccelerometerMidPoint) + '\n' +
-                "GyroscopeModel\n" + mGyroscopeModel + '\n' +
-                "GyroscopeVendor\n" + mGyroscopeVendor + '\n' +
-                "GyroscopeResolution\n" + mGyroscopeResolution + '\n' +
-                "GyroscopeMeasurementRange\n" + mGyroscopeMeasurementRange + '\n' +
-                "FilteredAccelerometerData\n" + Arrays.toString(mFilteredAccelerometerData);
+                "AccelerometerBias\n" + Arrays.toString(mAccelerometerBias) + '\n' +
+                "AccelerometerAvg\n" + Arrays.toString(mAccelerometerAvg) + '\n' +
+                "AccelerometerMin\n" + Arrays.toString(mAccelerometerMin) + '\n' +
+                "AccelerometerMax\n" + Arrays.toString(mAccelerometerMax) + '\n' +
+                "AccelerometerStandardDev\n" + Arrays.toString(mAccelerometerStandardDev);
     }
 
     @Override
@@ -386,22 +341,18 @@ public class SensorFingerprint implements Parcelable {
     public void writeToParcel(Parcel dest, int flags) {
         // Device Data
         dest.writeString(mDeviceModel);
+        dest.writeString(mDeviceMfg);
+        dest.writeString(mDeviceOS);
         // Accelerometer Data
         dest.writeString(mAccelerometerModel);
         dest.writeString(mAccelerometerVendor);
-        dest.writeFloat(mAccelerometerMeasurementRange);
         dest.writeFloatArray(mAccelerometerNoise);
-        dest.writeFloat(mAccelerometerResolution);
         dest.writeFloat(mAccelerometerSensitivity);
         dest.writeFloat(mAccelerometerLinearity);
-        dest.writeFloatArray(mAccelerometerRawBias);
-        dest.writeFloatArray(mAccelerometerMidPoint);
-        // Gyroscope Data
-        dest.writeString(mGyroscopeModel);
-        dest.writeString(mGyroscopeVendor);
-        dest.writeFloat(mGyroscopeResolution);
-        dest.writeFloat(mGyroscopeMeasurementRange);
-        // Linear Acceleration Data
-        dest.writeFloatArray(mFilteredAccelerometerData);
+        dest.writeFloatArray(mAccelerometerBias);
+        dest.writeFloatArray(mAccelerometerAvg);
+        dest.writeFloatArray(mAccelerometerMin);
+        dest.writeFloatArray(mAccelerometerMax);
+        dest.writeFloatArray(mAccelerometerStandardDev);
     }
 }

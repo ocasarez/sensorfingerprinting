@@ -28,6 +28,10 @@ public class SensorFingerprintActivityPresenter {
         }
     }
 
+    public void updateFingerprintScoreResult(int score){
+        mView.updateScoreResult(score);
+    }
+
     public void updateSensorFingerprint(SensorFingerprint sensorFingerprint){
         this.mSensorFingerprint = sensorFingerprint;
         mView.updateSensorFingerprintView(this.mSensorFingerprint);
@@ -47,6 +51,7 @@ public class SensorFingerprintActivityPresenter {
         void updateActionBarTitle();
         void updateSensorFingerprintView(SensorFingerprint sensorFingerprint);
         void updateFingerprintResultView(String s);
+        void updateScoreResult(int score);
         void navigateToFeatures();
         void exportFingerprint();
     }

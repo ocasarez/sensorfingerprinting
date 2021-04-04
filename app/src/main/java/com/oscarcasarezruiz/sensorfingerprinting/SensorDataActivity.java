@@ -73,7 +73,6 @@ public class SensorDataActivity extends AppCompatActivity implements SensorDataA
 
     // Counters
     private int mAccelerometerCounter = 0;
-    private int mLinearAccelerationCounter = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -155,17 +154,11 @@ public class SensorDataActivity extends AppCompatActivity implements SensorDataA
 
             }
 
-            if(SensorType == Sensor.TYPE_LINEAR_ACCELERATION && mLinearAccelerationCounter != mTargetCount){
-                writeToFile("TYPE_LINEAR_ACCELERATION", sensorEvent.values);
-                mLinearAccelerationCounter++;
-            }
-
-            if(mAccelerometerCounter == mTargetCount && mLinearAccelerationCounter == mTargetCount){
+            if(mAccelerometerCounter == mTargetCount){
                 Toast.makeText(this, "Auto-Stopping Collection.", Toast.LENGTH_LONG).show();
                 stopDataCollection();
             }
             Log.d(TAG, "mAccelerometerCounter =>: " + mAccelerometerCounter);
-            Log.d(TAG, "mLinearAccelerationCounter: => " + mLinearAccelerationCounter);
         }
     }
 

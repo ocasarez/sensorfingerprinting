@@ -47,52 +47,6 @@
                     android:textColor="@color/black" />
             </TableRow>
 
-            <TableRow
-                android:id="@+id/instructions_activity_tr_secondTrace"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent">
-
-                <TextView
-                    android:id="@+id/secondInstructions_traceResultTitle"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:fontFamily="@font/roboto"
-                    android:text="@string/secondInstructions_traceResultTitle"
-                    android:textColor="@color/black" />
-
-                <TextView
-                    android:id="@+id/secondInstructions_traceResult"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:fontFamily="@font/roboto"
-                    android:gravity="center"
-                    android:textColor="@color/black" />
-
-            </TableRow>
-
-            <TableRow
-                android:id="@+id/instructions_activity_tr_thirdTrace"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent">
-
-                <TextView
-                    android:id="@+id/thirdInstructions_traceResultTitle"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:fontFamily="@font/roboto"
-                    android:text="@string/trace_3_result"
-                    android:textColor="@color/black" />
-
-                <TextView
-                    android:id="@+id/thirdInstructions_traceResult"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:fontFamily="@font/roboto"
-                    android:gravity="center"
-                    android:textColor="@color/black" />
-
-            </TableRow>
-
         </TableLayout>
 
         <Button

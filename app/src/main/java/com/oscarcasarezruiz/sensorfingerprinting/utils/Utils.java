@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.hardware.Sensor;
 import android.hardware.SensorManager;
+import android.os.Build;
 import android.util.Log;
 
 import com.oscarcasarezruiz.sensorfingerprinting.models.SensorFingerprint;
@@ -12,6 +13,7 @@ import com.oscarcasarezruiz.sensorfingerprinting.models.SensorTrace;
 import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.UUID;
 
 public final class Utils {
@@ -88,7 +90,7 @@ public final class Utils {
         } else { // use relative error
             result =  diff / (absA + absB) < percentage;
         }
-        Log.d(TAG, flag + "=> " + result);
+        Log.d(TAG, flag + " => " + result);
         return result;
     }
 
@@ -111,6 +113,66 @@ public final class Utils {
         return average;
     }
 
+    public static float[] maximumMeasurements(ArrayList<float[]> measurements){
+        ArrayList<Float> XValues = new ArrayList<>();
+        ArrayList<Float> YValues = new ArrayList<>();
+        ArrayList<Float> ZValues = new ArrayList<>();
+        for (int i = 0; i < measurements.size(); i++) {
+            XValues.add(measurements.get(i)[0]);
+            YValues.add(measurements.get(i)[1]);
+            ZValues.add(measurements.get(i)[2]);
+        }
+        float[] maximumValuesArr = new float[3];
+        maximumValuesArr[0] = Collections.max(XValues);
+        maximumValuesArr[1] = Collections.max(YValues);
+        maximumValuesArr[2] = Collections.max(ZValues);
+        Log.d(TAG, "maximumMeasurements: Max => " + Arrays.toString(maximumValuesArr));
+        return maximumValuesArr;
+    }
+
+    public static float[] minimumMeasurements(ArrayList<float[]> measurements){
+        ArrayList<Float> XValues = new ArrayList<>();
+        ArrayList<Float> YValues = new ArrayList<>();
+        ArrayList<Float> ZValues = new ArrayList<>();
+        for (int i = 0; i < measurements.size(); i++) {
+            XValues.add(measurements.get(i)[0]);
+            YValues.add(measurements.get(i)[1]);
+            ZValues.add(measurements.get(i)[2]);
+        }
+        float[] minimumValueArr = new float[3];
+        minimumValueArr[0] = Collections.min(XValues);
+        minimumValueArr[1] = Collections.min(YValues);
+        minimumValueArr[2] = Collections.min(ZValues);
+        Log.d(TAG, "minimumMeasurements: Min => " + Arrays.toString(minimumValueArr));
+        return minimumValueArr;
+    }
+
+    public static float[] standardDeviationMeasurements(ArrayList<float[]> measurements){
+        float[] average = AverageTracesMeasured(measurements);
+        float meanSquareX = 0.0f;
+        float meanSquareY = 0.0f;
+        float meanSquareZ = 0.0f;
+
+        // Calculate Mean Square and Sum
+        for(float[] arr : measurements){
+            meanSquareX += Math.pow((arr[0] - average[0]), 2);
+            meanSquareY += Math.pow((arr[1] - average[1]), 2);
+            meanSquareZ += Math.pow((arr[2] - average[2]), 2);
+        }
+        Log.d(TAG, "standardDeviationMeasurements: X -> " + meanSquareX);
+        Log.d(TAG, "standardDeviationMeasurements: Y -> " + meanSquareY);
+        Log.d(TAG, "standardDeviationMeasurements: Z -> " + meanSquareZ);
+        meanSquareX = convertDoubleToFloat(Math.sqrt(meanSquareX / measurements.size()));
+        meanSquareY = convertDoubleToFloat(Math.sqrt(meanSquareY / measurements.size()));
+        meanSquareZ = convertDoubleToFloat(Math.sqrt(meanSquareZ / measurements.size()));
+
+        Log.d(TAG, "standardDeviationMeasurements: X -> " + meanSquareX);
+        Log.d(TAG, "standardDeviationMeasurements: Y -> " + meanSquareY);
+        Log.d(TAG, "standardDeviationMeasurements: Z -> " + meanSquareZ);
+
+        return new float[]{meanSquareX, meanSquareY, meanSquareZ};
+    }
+
     public static float calculateSensorSensitivity(float zGPositive, float zGNegative){
         return (zGPositive - zGNegative) / (2 * SensorManager.GRAVITY_EARTH);
     }
@@ -123,23 +185,39 @@ public final class Utils {
         return value.floatValue();
     }
 
-    public static float[] calculateMidpoint(SensorTrace[] traces){
-        SensorTrace midpoint = new SensorTrace();
-
-        switch (traces.length){
-            case 3:
-                midpoint.setAccelerometerX((traces[0].getAccelerometerX() + traces[1].getAccelerometerY() + traces[2].getAccelerometerZ())/3);
-                midpoint.setAccelerometerY((traces[0].getAccelerometerY() + traces[1].getAccelerometerY() + traces[2].getAccelerometerY())/3);
-                midpoint.setAccelerometerZ((traces[0].getAccelerometerZ() + traces[1].getAccelerometerZ() + traces[2].getAccelerometerZ())/3);
+    public static String getDeviceOS(){
+        int sdkVersion = Build.VERSION.SDK_INT;
+        String deviceOS = "";
+        switch (sdkVersion){
+            case 30:
+                deviceOS += 11;
                 break;
-            case 2:
-                midpoint.setAccelerometerX((traces[0].getAccelerometerX() + traces[1].getAccelerometerX())/2);
-                midpoint.setAccelerometerY((traces[0].getAccelerometerY() + traces[1].getAccelerometerY())/2);
-                midpoint.setAccelerometerZ((traces[0].getAccelerometerZ() + traces[1].getAccelerometerZ())/2);
+            case 29:
+                deviceOS += 10;
                 break;
-
+            case 28:
+                deviceOS += 9;
+                break;
+            case 27:
+                deviceOS += "8.1.0";
+                break;
+            case 26:
+                deviceOS += "8.0.0";
+                break;
+            case 25:
+                deviceOS += "7.1";
+                break;
+            case 24:
+                deviceOS += "7.0";
+                break;
+            case 23:
+                deviceOS += "6.0";
+                break;
+            default:
+                deviceOS += "< 6.0";
+                break;
         }
-        return midpoint.returnArray();
-    }
 
+        return deviceOS;
+    }
 }

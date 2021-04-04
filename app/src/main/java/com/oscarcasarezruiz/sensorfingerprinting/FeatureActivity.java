@@ -25,9 +25,8 @@ public class FeatureActivity extends AppCompatActivity implements FeatureActivit
     private void initViews(){
         updateActionBarTitle();
         findViewById(R.id.feature_activity_btn_sensordata).setOnClickListener(this);
-        findViewById(R.id.feature_activity_btn_sensorfingerprint_3trace).setOnClickListener(this);
-        findViewById(R.id.feature_activity_btn_sensorfingerprint_2trace).setOnClickListener(this);
         findViewById(R.id.feature_activity_btn_sensorfingerprint_1trace).setOnClickListener(this);
+        findViewById(R.id.feature_activity_btn_identifyDevice).setOnClickListener(this);
     }
 
     @Override
@@ -36,14 +35,11 @@ public class FeatureActivity extends AppCompatActivity implements FeatureActivit
             case R.id.feature_activity_btn_sensordata:
                 presenter.sensorDataButtonClicked();
                 break;
-            case R.id.feature_activity_btn_sensorfingerprint_3trace:
-                presenter.sensorFingerprintButtonClicked("Three");
-                break;
-            case R.id.feature_activity_btn_sensorfingerprint_2trace:
-                presenter.sensorFingerprintButtonClicked("Two");
-                break;
             case R.id.feature_activity_btn_sensorfingerprint_1trace:
-                presenter.sensorFingerprintButtonClicked("One");
+                presenter.sensorFingerprintButtonClicked();
+                break;
+            case R.id.feature_activity_btn_identifyDevice:
+                presenter.sensorIdentifyDeviceButtonClicked();
                 break;
         }
     }
@@ -60,9 +56,17 @@ public class FeatureActivity extends AppCompatActivity implements FeatureActivit
     }
 
     @Override
-    public void navigateToSensorFingerprint(String traces) {
+    public void navigateToSensorFingerprint() {
         Intent intent = new Intent(this, InstructionsActivity.class);
-        intent.putExtra("TraceCount", traces);
+        intent.putExtra("Identify", false);
         startActivity(intent);
     }
+
+    @Override
+    public void navigateToIdentifyDevice() {
+        Intent intent = new Intent(this, InstructionsActivity.class);
+        intent.putExtra("Identify", true);
+        startActivity(intent);
+    }
+
 }
