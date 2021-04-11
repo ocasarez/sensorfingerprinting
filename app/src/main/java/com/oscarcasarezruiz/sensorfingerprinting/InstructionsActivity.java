@@ -1,6 +1,5 @@
 package com.oscarcasarezruiz.sensorfingerprinting;
 
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
@@ -10,37 +9,18 @@ import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
-import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
-import android.widget.Toast;
-
-import com.google.android.gms.tasks.OnFailureListener;
-import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.firebase.FirebaseApp;
-import com.google.firebase.storage.FirebaseStorage;
-import com.google.firebase.storage.StorageMetadata;
-import com.google.firebase.storage.StorageReference;
-import com.google.firebase.storage.UploadTask;
 import com.oscarcasarezruiz.sensorfingerprinting.fragments.FirstInstructionFragment;
 import com.oscarcasarezruiz.sensorfingerprinting.models.SensorFingerprint;
 import com.oscarcasarezruiz.sensorfingerprinting.models.SensorTrace;
 import com.oscarcasarezruiz.sensorfingerprinting.presenter.InstructionsActivityPresenter;
 import com.oscarcasarezruiz.sensorfingerprinting.utils.Utils;
-
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.text.Format;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
-import java.util.Locale;
-import java.util.Objects;
 
 public class InstructionsActivity extends AppCompatActivity implements InstructionsActivityPresenter.View, View.OnClickListener, SensorEventListener {
 
@@ -66,12 +46,6 @@ public class InstructionsActivity extends AppCompatActivity implements Instructi
     private boolean mIsLogging;
     private boolean mIdentify;
 
-    // File Writer
-    private FileWriter mFileWriter;
-    private File mFile;
-    // Firebase Storage Ref
-    private StorageReference mStorageReference;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -85,11 +59,6 @@ public class InstructionsActivity extends AppCompatActivity implements Instructi
         presenter = new InstructionsActivityPresenter(this);
         accelerometerMeasurement = new ArrayList<>();
         sensorFingerprint = new SensorFingerprint();
-
-        FirebaseApp.initializeApp(this.getApplicationContext());
-        //Init Firebase Storage
-        mStorageReference = FirebaseStorage.getInstance().getReference();
-        createFile();
     }
 
     @Override
@@ -100,8 +69,6 @@ public class InstructionsActivity extends AppCompatActivity implements Instructi
                 mCollectAndNextButton.setEnabled(false);
                 presenter.collectTraceButtonClicked();
             } else {
-                stopWritingData();
-                uploadFileToFireStorage();
                 presenter.sensorFingerprintResultsButtonClicked();
             }
         }
@@ -143,7 +110,6 @@ public class InstructionsActivity extends AppCompatActivity implements Instructi
                 accelerometerMeasurement.add(data);
                 updateMinValueArr(data);
                 updateMaxValueArr(data);
-                writeToFile("TYPE_ACCELEROMETER", data);
             }
         }
     }
@@ -205,9 +171,6 @@ public class InstructionsActivity extends AppCompatActivity implements Instructi
         if(!Build.MANUFACTURER.isEmpty()){
             sensorFingerprint.setDeviceMfg(Build.MANUFACTURER);
         }
-        // Device OS
-        sensorFingerprint.setDeviceOS(Utils.getDeviceOS());
-
         // Accelerometer Data
         // Accelerometer Model
         if(!mAccelerometer.getName().isEmpty()){
@@ -233,65 +196,6 @@ public class InstructionsActivity extends AppCompatActivity implements Instructi
         sensorFingerprint.setSensorSensitivity(Utils.calculateSensorSensitivity(presenter.getFirstTrace().getAccelerometerZ(), SensorManager.GRAVITY_EARTH * -1));
         // Accelerometer Linearity
         sensorFingerprint.setSensorLinearity(Utils.calculateSensorLinearity(presenter.getFirstTrace().getAccelerometerZ(), SensorManager.GRAVITY_EARTH * -1, 0));
-    }
-
-    private void writeToFile(String sensor, float[] events){
-        SimpleDateFormat sdf = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss");
-        try {
-            mFileWriter.write(String.format("%s; %s; %f; %f; %f\n", sdf.format(new Date()), sensor, events[0], events[1], events[2]));
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    private void createFile(){
-        // Create File
-        Format f = new SimpleDateFormat("MM_dd_yyyy_hh_mm_ss", Locale.getDefault());
-        mFile = new File(getStorageDir(), Build.MODEL + "mobile_sensorData_" + f.format(new Date()) + ".csv");
-        // Write File Header
-        try {
-            mFileWriter = new FileWriter(mFile);
-            mFileWriter.write(String.format("%s; %s; %s; %s; %s\n", "Time", "Sensor", "X-Axis", "Y-Axis", "Z-Axis"));
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    private void stopWritingData(){
-        // Stop Writing to File
-        try {
-            mFileWriter.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    private String getStorageDir() {
-        return Objects.requireNonNull(this.getExternalFilesDir(null)).getAbsolutePath();
-    }
-
-    private void uploadFileToFireStorage(){
-        // Upload File to Firebase
-        Uri sensorDataFile = Uri.fromFile(mFile);
-        StorageReference sensorDataRef = mStorageReference.child("mobile-sensordata/sensorfingerprint_measurements/" + sensorDataFile.getLastPathSegment());
-        StorageMetadata metadata = new StorageMetadata.Builder()
-                .setContentType("text/csv")
-                .setCustomMetadata("device", Build.ID)
-                .build();
-        UploadTask uploadTask = sensorDataRef.putFile(sensorDataFile, metadata);
-
-        uploadTask.addOnFailureListener(new OnFailureListener() {
-            @Override
-            public void onFailure(@NonNull Exception e) {
-                Toast.makeText(InstructionsActivity.this, "Measurements upload failed.", Toast.LENGTH_LONG).show();
-            }
-        }).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
-            @Override
-            public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-                Toast.makeText(InstructionsActivity.this, "Measurements uploaded successfully.", Toast.LENGTH_LONG).show();
-            }
-        });
-
     }
 
     private void updateMinValueArr(float[] data){

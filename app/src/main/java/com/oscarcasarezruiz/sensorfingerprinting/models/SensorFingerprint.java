@@ -8,15 +8,14 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
-public class SensorFingerprint implements Parcelable {
+import static com.oscarcasarezruiz.sensorfingerprinting.utils.Utils.diffWithAbs;
 
-    private String TAG = "SensorFingerprint";
+public class SensorFingerprint implements Parcelable {
 
     private String mUUID;
     // Device Data
     private String mDeviceModel;
     private String mDeviceMfg;
-    private String mDeviceOS;
     // Accelerometer Data
     private String mAccelerometerModel;
     private String mAccelerometerVendor;
@@ -43,7 +42,6 @@ public class SensorFingerprint implements Parcelable {
         // Device Data
         this.mDeviceModel = (String) ((Map) document.get("Device Data")).get("Model");
         this.mDeviceMfg = (String) ((Map) document.get("Device Data")).get("Manufacturer");
-        this.mDeviceOS = (String) ((Map) document.get("Device Data")).get("OS Version");
         // Accelerometer Data
         this.mAccelerometerModel = (String) ((Map) document.get("Accelerometer Data")).get("Model");
         this.mAccelerometerVendor = (String) ((Map) document.get("Accelerometer Data")).get("Vendor");
@@ -75,7 +73,6 @@ public class SensorFingerprint implements Parcelable {
         // Device Data
         mDeviceModel = in.readString();
         mDeviceMfg = in.readString();
-        mDeviceOS = in.readString();
         // Accelerometer Data
         mAccelerometerModel = in.readString();
         mAccelerometerVendor = in.readString();
@@ -109,7 +106,6 @@ public class SensorFingerprint implements Parcelable {
         Map<String, Object> deviceData = new HashMap<>();
         deviceData.put("Model", this.mDeviceModel);
         deviceData.put("Manufacturer", this.mDeviceMfg);
-        deviceData.put("OS Version", this.mDeviceOS);
         // Accelerometer Data
         Map<String, Object> accelerometerData = new HashMap<>();
         accelerometerData.put("Model", this.mAccelerometerModel);
@@ -128,71 +124,54 @@ public class SensorFingerprint implements Parcelable {
         return docData;
     }
 
-    public int compareSensorFingerprint(SensorFingerprint o){
-        int weight = 0;
-        float percentage = 0.05f;
+    public float compareSensorFingerprint(SensorFingerprint o){
+        // Compare Values by difference
+        // Smaller the value of weight the more likely the sensor fingerprint is the same
+        // Larger the value of weight the more likely the sensor fingerprint is not the same
+        float weight = 0;
 
         // Device Data
-        // Model - 1
+        // Model
         if(this.mDeviceModel.equals(o.getDeviceModel())){
-            weight += 1;
+            weight += 0.0f;
+        } else {
+            weight += 1.0f;
         }
-        // Manufacturer - 1
+        // Manufacturer
         if(this.mDeviceMfg.equals(o.getDeviceMfg())){
-            weight += 1;
+            weight += 0.0f;
+        } else {
+            weight += 1.0f;
         }
-        // OS - 1
-        if(this.mDeviceOS.equals(o.getDeviceOS())){
-            weight += 1;
-        }
-
         // Accelerometer Data
-        // Model - 1
+        // Model
         if(this.mAccelerometerModel.equals(o.getSensorModel())){
-            weight += 1;
+            weight += 0.0f;
+        } else {
+            weight += 1.0f;
         }
-        // Vendor - 1
+        // Vendor
         if(this.mAccelerometerVendor.equals(o.getSensorVendor())){
-            weight += 1;
+            weight += 0.0f;
+        } else {
+            weight += 1.0f;
         }
-        // Noise - 1
-        boolean compareZ = Utils.percentageRange("Noise - Z", this.mAccelerometerNoise[2], o.getSensorNoise()[2], percentage);
-        if(compareZ){
-            weight += 1;
-        }
-        // Minimum - 2
-        compareZ = Utils.percentageRange("Minimum - Z", this.mAccelerometerMin[2], o.getAccelerometerMin()[2], percentage);
-        if(compareZ){
-            weight += 2;
-        }
-        // Maximum - 2
-        compareZ = Utils.percentageRange("Maximum - Z", this.mAccelerometerMax[2], o.getAccelerometerMax()[2], percentage);
-        if(compareZ){
-            weight += 2;
-        }
-        // Bias - 4
-        compareZ = Utils.percentageRange("Bias - Z", this.mAccelerometerBias[2], o.getSensorRawBias()[2], percentage);
-        if(compareZ){
-            weight += 4;
-        }
-        // Standard Deviation - 8
-        compareZ = Utils.percentageRange("Standard Deviation - Z", this.mAccelerometerStandardDev[2], o.getAccelerometerStandardDev()[2], percentage);
-        if(compareZ){
-            weight += 8;
-        }
-        // Average - 8
-        compareZ = Utils.percentageRange("Average - Z", this.mAccelerometerAvg[2], o.getAccelerometerAvg()[2], percentage);
-        if(compareZ){
-            weight += 8;
-        }
-        // Sensitivity - 10
-        if(Utils.percentageRange("Sensitivity", this.mAccelerometerSensitivity, o.getSensorSensitivity(), percentage)){
-            weight += 10;
-        }
-        // Linearity - 10
-        if(Utils.percentageRange("Linearity", this.mAccelerometerLinearity, o.getSensorLinearity(), percentage)){
-            weight += 10;
-        }
+        // Noise
+        weight += diffWithAbs("Noise", this.mAccelerometerNoise[2], o.getSensorNoise()[2]);
+        // Minimum
+        weight += diffWithAbs("Minimum", this.mAccelerometerMin[2], o.getAccelerometerMin()[2]);
+        // Maximum
+        weight += diffWithAbs("Maximum", this.mAccelerometerMax[2], o.getAccelerometerMax()[2]);
+        // Bias
+        weight += diffWithAbs("Bias", this.mAccelerometerBias[2], o.getSensorRawBias()[2]);
+        // Standard Deviation
+        weight += diffWithAbs("Standard Deviation", this.mAccelerometerStandardDev[2], o.getAccelerometerStandardDev()[2]);
+        // Average
+        weight += diffWithAbs("Average", this.mAccelerometerAvg[2], o.getAccelerometerAvg()[2]);
+        // Sensitivity
+        weight += diffWithAbs("Sensitivity", this.mAccelerometerSensitivity, o.getSensorSensitivity());
+        // Linearity
+        weight += diffWithAbs("Linearity", this.mAccelerometerLinearity, o.getSensorLinearity());
 
         return weight;
     }
@@ -273,14 +252,6 @@ public class SensorFingerprint implements Parcelable {
         this.mDeviceMfg = mDeviceMfg;
     }
 
-    public String getDeviceOS() {
-        return mDeviceOS;
-    }
-
-    public void setDeviceOS(String mDeviceOS) {
-        this.mDeviceOS = mDeviceOS;
-    }
-
     public float[] getAccelerometerAvg() {
         return mAccelerometerAvg;
     }
@@ -319,17 +290,16 @@ public class SensorFingerprint implements Parcelable {
                 "Fingerprint ID\n" + mUUID + '\n' +
                 "DeviceModel\n" + mDeviceModel + '\n' +
                 "DeviceMfg\n" + mDeviceMfg + '\n' +
-                "DeviceOS\n" + mDeviceOS + '\n' +
                 "AccelerometerModel\n" + mAccelerometerModel + '\n' +
                 "AccelerometerVendor\n" + mAccelerometerVendor + '\n' +
                 "AccelerometerSensitivity\n" + mAccelerometerSensitivity + '\n' +
                 "AccelerometerLinearity\n" + mAccelerometerLinearity + '\n' +
-                "AccelerometerNoise\n" + Arrays.toString(mAccelerometerNoise) + '\n' +
-                "AccelerometerBias\n" + Arrays.toString(mAccelerometerBias) + '\n' +
-                "AccelerometerAvg\n" + Arrays.toString(mAccelerometerAvg) + '\n' +
-                "AccelerometerMin\n" + Arrays.toString(mAccelerometerMin) + '\n' +
-                "AccelerometerMax\n" + Arrays.toString(mAccelerometerMax) + '\n' +
-                "AccelerometerStandardDev\n" + Arrays.toString(mAccelerometerStandardDev);
+                "AccelerometerNoise\n" + mAccelerometerNoise[2] + '\n' +
+                "AccelerometerBias\n" + mAccelerometerBias[2] + '\n' +
+                "AccelerometerAvg\n" + mAccelerometerAvg[2] + '\n' +
+                "AccelerometerMin\n" + mAccelerometerMin[2] + '\n' +
+                "AccelerometerMax\n" + mAccelerometerMax[2] + '\n' +
+                "AccelerometerStandardDev\n" + mAccelerometerStandardDev[2];
     }
 
     @Override
@@ -342,7 +312,6 @@ public class SensorFingerprint implements Parcelable {
         // Device Data
         dest.writeString(mDeviceModel);
         dest.writeString(mDeviceMfg);
-        dest.writeString(mDeviceOS);
         // Accelerometer Data
         dest.writeString(mAccelerometerModel);
         dest.writeString(mAccelerometerVendor);

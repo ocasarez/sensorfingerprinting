@@ -76,22 +76,21 @@ public final class Utils {
     }
 
     public static boolean percentageRange(String flag, float actual, float expected, float percentage){
-        final float absA = Math.abs(actual);
-        final float absB = Math.abs(expected);
-        final float diff = Math.abs(actual - expected);
-        boolean result = false;
+        boolean result;
 
         if (actual == expected) { // shortcut, handles infinities
             result = true;
-        } else if (actual == 0 || expected == 0 || diff < Float.MIN_NORMAL) {
-            // a or b is zero or both are extremely close to it
-            // relative error is less meaningful here
-            result =  diff < (percentage * Float.MIN_NORMAL);
         } else { // use relative error
-            result =  diff / (absA + absB) < percentage;
+            result = actual + (actual * percentage) > expected || actual - (actual * percentage) < expected;
         }
         Log.d(TAG, flag + " => " + result);
         return result;
+    }
+
+    public static float diffWithAbs(String flag, float value1, float value2){
+        float diff = Math.abs(value1 - value2);
+        Log.d(TAG, flag + " => " + diff);
+        return diff;
     }
 
 

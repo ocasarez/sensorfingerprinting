@@ -55,10 +55,16 @@
                 android:text="@string/sensorfingerprint_startOver" />
 
             <Button
-                android:id="@+id/sensorfingerprint_activity_btn_exportFingerprint"
+                android:id="@+id/sensorfingerprint_activity_btn_correctIdentification"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="@string/export_fingerprint" />
+                android:text="@string/correct_identification" />
+
+            <Button
+                android:id="@+id/sensorfingerprint_activity_btn_wrongIdentification"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/wrong_identification" />
 
         </LinearLayout>
     </ScrollView>

@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Sensor Fingerprinting</string>
+    <string name="app_name">SOFIA</string>
     <string name="disclaimer_title">Disclaimer</string>
     <string name="disclaimer_message">
         <p dir="ltr"><b>Please read the disclaimer before accepting.</b></p>
@@ -61,5 +61,7 @@
     <string name="linear_acceleration">Device Linear Acceleration</string>
     <string name="calculated_linear_acceleration">Calculated Linear Acceleration</string>
     <string name="export_fingerprint">Export Fingerprint</string>
+    <string name="correct_identification">Correct Device</string>
+    <string name="wrong_identification">Wrong Device</string>
 
 </resources>
