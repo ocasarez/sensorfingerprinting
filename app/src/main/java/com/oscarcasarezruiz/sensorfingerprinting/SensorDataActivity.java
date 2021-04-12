@@ -26,17 +26,13 @@ import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageMetadata;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
-import com.oscarcasarezruiz.sensorfingerprinting.models.SensorInfo;
-import com.oscarcasarezruiz.sensorfingerprinting.models.SensorTrace;
 import com.oscarcasarezruiz.sensorfingerprinting.presenter.SensorDataActivityPresenter;
-import com.oscarcasarezruiz.sensorfingerprinting.utils.Utils;
 
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.text.Format;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.Locale;
 import java.util.Objects;

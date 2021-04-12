@@ -31,14 +31,13 @@ public class InstructionsActivity extends AppCompatActivity implements Instructi
     // Motion Sensor
     private Sensor mAccelerometer;
     private SensorManager mSensorManager;
-    private ArrayList<float[]> accelerometerMeasurement;
+    private ArrayList<Float> accelerometerMeasurement;
     private SensorFingerprint sensorFingerprint;
-    private float[] sensorNoise;
-    private float[] senorRawBias;
-    private float[] sensorMinimum = new float[]{Float.MAX_VALUE, Float.MAX_VALUE, Float.MAX_VALUE};
-    private float[] sensorMaximum = new float[]{-Float.MAX_VALUE, -Float.MAX_VALUE, -Float.MAX_VALUE};
-    private float[] sensorAverage;
-    private float[] sensorStdev;
+    private float senorRawBias;
+    private float sensorMinimum = Float.MAX_VALUE;
+    private float sensorMaximum = -Float.MAX_VALUE;
+    private float sensorAverage;
+    private float sensorStdev;
 
     //UI Properties
     private TextView mTraceView1;
@@ -106,10 +105,10 @@ public class InstructionsActivity extends AppCompatActivity implements Instructi
         if(mIsLogging){
             int SensorType = sensorEvent.sensor.getType();
             if(SensorType == Sensor.TYPE_ACCELEROMETER){
-                float[] data = sensorEvent.values;
-                accelerometerMeasurement.add(data);
-                updateMinValueArr(data);
-                updateMaxValueArr(data);
+                float ZValues = sensorEvent.values[2];
+                accelerometerMeasurement.add(ZValues);
+                updateMinValueArr(ZValues);
+                updateMaxValueArr(ZValues);
             }
         }
     }
@@ -129,10 +128,9 @@ public class InstructionsActivity extends AppCompatActivity implements Instructi
 
     private void saveTrace(){
         presenter.saveFirstTrace(Utils.AverageTracesMeasured(accelerometerMeasurement));
-        sensorNoise = Utils.calculateSensorNoise(accelerometerMeasurement);
         sensorAverage = Utils.AverageTracesMeasured(accelerometerMeasurement);
         sensorStdev = Utils.standardDeviationMeasurements(accelerometerMeasurement);
-        senorRawBias = Utils.calculateSensorBias(new SensorTrace(sensorAverage[0], sensorAverage[1], sensorAverage[2]));
+        senorRawBias = Utils.calculateSensorBias(sensorAverage);
         accelerometerMeasurement.clear();
     }
 
@@ -180,8 +178,6 @@ public class InstructionsActivity extends AppCompatActivity implements Instructi
         if(!mAccelerometer.getVendor().isEmpty()){
             sensorFingerprint.setSensorVendor(mAccelerometer.getVendor());
         }
-        // Accelerometer Noise
-        sensorFingerprint.setSensorNoise(sensorNoise);
         // Accelerometer Minimum
         sensorFingerprint.setAccelerometerMin(sensorMinimum);
         // Accelerometer Maximum
@@ -193,38 +189,22 @@ public class InstructionsActivity extends AppCompatActivity implements Instructi
         // Accelerometer Bias
         sensorFingerprint.setSensorRawBias(senorRawBias);
         // Accelerometer Sensitivity
-        sensorFingerprint.setSensorSensitivity(Utils.calculateSensorSensitivity(presenter.getFirstTrace().getAccelerometerZ(), SensorManager.GRAVITY_EARTH * -1));
+        sensorFingerprint.setSensorSensitivity(Utils.calculateSensorSensitivity(presenter.getFirstTrace(), SensorManager.GRAVITY_EARTH * -1));
         // Accelerometer Linearity
-        sensorFingerprint.setSensorLinearity(Utils.calculateSensorLinearity(presenter.getFirstTrace().getAccelerometerZ(), SensorManager.GRAVITY_EARTH * -1, 0));
+        sensorFingerprint.setSensorLinearity(Utils.calculateSensorLinearity(presenter.getFirstTrace(), SensorManager.GRAVITY_EARTH * -1, 0));
     }
 
-    private void updateMinValueArr(float[] data){
-        // X-Values
-        if(data[0] < sensorMinimum[0]){
-            sensorMinimum[0] = data[0];
-        }
-        // Y-Values
-        if(data[1] < sensorMinimum[1]){
-            sensorMinimum[1] = data[1];
-        }
+    private void updateMinValueArr(float data){
         // Z-Values
-        if(data[2] < sensorMinimum[2]){
-            sensorMinimum[2] = data[2];
+        if(data < sensorMinimum){
+            sensorMinimum = data;
         }
     }
 
-    private void updateMaxValueArr(float[] data){
-        // X-Values
-        if(data[0] > sensorMaximum[0]){
-            sensorMaximum[0] = data[0];
-        }
-        // Y-Values
-        if(data[1] > sensorMaximum[1]){
-            sensorMaximum[1] = data[1];
-        }
+    private void updateMaxValueArr(float data){
         // Z-Values
-        if(data[2] > sensorMaximum[2]){
-            sensorMaximum[2] = data[2];
+        if(data > sensorMaximum){
+            sensorMaximum = data;
         }
     }
 }

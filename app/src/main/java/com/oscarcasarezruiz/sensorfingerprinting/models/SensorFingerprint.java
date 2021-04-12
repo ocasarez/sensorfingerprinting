@@ -21,20 +21,14 @@ public class SensorFingerprint implements Parcelable {
     private String mAccelerometerVendor;
     private float mAccelerometerSensitivity;
     private float mAccelerometerLinearity;
-    private float[] mAccelerometerNoise;
-    private float[] mAccelerometerBias;
-    private float[] mAccelerometerAvg;
-    private float[] mAccelerometerMin;
-    private float[] mAccelerometerMax;
-    private float[] mAccelerometerStandardDev;
+    private float mAccelerometerBias;
+    private float mAccelerometerAvg;
+    private float mAccelerometerMin;
+    private float mAccelerometerMax;
+    private float mAccelerometerStandardDev;
 
     public SensorFingerprint(){
-        mAccelerometerNoise = new float[3];
-        mAccelerometerBias = new float[3];
-        mAccelerometerAvg = new float[3];
-        mAccelerometerMin = new float[3];
-        mAccelerometerMax = new float[3];
-        mAccelerometerStandardDev = new float[3];
+
     }
 
     public SensorFingerprint(Map<String, Object> document){
@@ -47,26 +41,11 @@ public class SensorFingerprint implements Parcelable {
         this.mAccelerometerVendor = (String) ((Map) document.get("Accelerometer Data")).get("Vendor");
         this.mAccelerometerLinearity = Utils.convertDoubleToFloat((Double) ((Map) document.get("Accelerometer Data")).get("Linearity"));
         this.mAccelerometerSensitivity = Utils.convertDoubleToFloat((Double) ((Map) document.get("Accelerometer Data")).get("Sensitivity"));
-        ArrayList<Double> arrayListNoise = (ArrayList<Double>) ((Map) document.get("Accelerometer Data")).get("Noise");
-        ArrayList<Double> arrayListBias = (ArrayList<Double>) ((Map) document.get("Accelerometer Data")).get("Bias");
-        ArrayList<Double> arrayListAverage = (ArrayList<Double>) ((Map) document.get("Accelerometer Data")).get("Average");
-        ArrayList<Double> arrayListMinimum = (ArrayList<Double>) ((Map) document.get("Accelerometer Data")).get("Minimum");
-        ArrayList<Double> arrayListMaximum = (ArrayList<Double>) ((Map) document.get("Accelerometer Data")).get("Maximum");
-        ArrayList<Double> arrayListStandardDev = (ArrayList<Double>) ((Map) document.get("Accelerometer Data")).get("Standard Deviation");
-        this.mAccelerometerNoise = new float[3];
-        this.mAccelerometerAvg = new float[3];
-        this.mAccelerometerBias = new float[3];
-        this.mAccelerometerMin = new float[3];
-        this.mAccelerometerMax = new float[3];
-        this.mAccelerometerStandardDev = new float[3];
-        for(int i = 0; i < 3; i++){
-            this.mAccelerometerNoise[i] = Utils.convertDoubleToFloat(arrayListNoise.get(i));
-            this.mAccelerometerBias[i] = Utils.convertDoubleToFloat(arrayListBias.get(i));
-            this.mAccelerometerAvg[i] = Utils.convertDoubleToFloat(arrayListAverage.get(i));
-            this.mAccelerometerMin[i] = Utils.convertDoubleToFloat(arrayListMinimum.get(i));
-            this.mAccelerometerMax[i] = Utils.convertDoubleToFloat(arrayListMaximum.get(i));
-            this.mAccelerometerStandardDev[i] = Utils.convertDoubleToFloat(arrayListStandardDev.get(i));
-        }
+        this.mAccelerometerAvg = Utils.convertDoubleToFloat((Double) ((Map) document.get("Accelerometer Data")).get("Average"));
+        this.mAccelerometerBias = Utils.convertDoubleToFloat((Double) ((Map) document.get("Accelerometer Data")).get("Bias"));
+        this.mAccelerometerMin = Utils.convertDoubleToFloat((Double) ((Map) document.get("Accelerometer Data")).get("Minimum"));
+        this.mAccelerometerMax = Utils.convertDoubleToFloat((Double) ((Map) document.get("Accelerometer Data")).get("Maximum"));
+        this.mAccelerometerStandardDev = Utils.convertDoubleToFloat((Double) ((Map) document.get("Accelerometer Data")).get("Standard Deviation"));
     }
 
     protected SensorFingerprint(Parcel in) {
@@ -76,14 +55,13 @@ public class SensorFingerprint implements Parcelable {
         // Accelerometer Data
         mAccelerometerModel = in.readString();
         mAccelerometerVendor = in.readString();
-        mAccelerometerNoise = in.createFloatArray();
         mAccelerometerSensitivity = in.readFloat();
         mAccelerometerLinearity = in.readFloat();
-        mAccelerometerBias = in.createFloatArray();
-        mAccelerometerAvg = in.createFloatArray();
-        mAccelerometerMin = in.createFloatArray();
-        mAccelerometerMax = in.createFloatArray();
-        mAccelerometerStandardDev = in.createFloatArray();
+        mAccelerometerBias = in.readFloat();
+        mAccelerometerAvg = in.readFloat();
+        mAccelerometerMin = in.readFloat();
+        mAccelerometerMax = in.readFloat();
+        mAccelerometerStandardDev = in.readFloat();
 
     }
 
@@ -110,14 +88,13 @@ public class SensorFingerprint implements Parcelable {
         Map<String, Object> accelerometerData = new HashMap<>();
         accelerometerData.put("Model", this.mAccelerometerModel);
         accelerometerData.put("Vendor", this.mAccelerometerVendor);
-        accelerometerData.put("Noise", Arrays.asList(this.mAccelerometerNoise[0], this.mAccelerometerNoise[1], this.mAccelerometerNoise[2]));
         accelerometerData.put("Sensitivity", this.mAccelerometerSensitivity);
         accelerometerData.put("Linearity", this.mAccelerometerLinearity);
-        accelerometerData.put("Bias", Arrays.asList(this.mAccelerometerBias[0], this.mAccelerometerBias[1], this.mAccelerometerBias[2]));
-        accelerometerData.put("Average", Arrays.asList(this.mAccelerometerAvg[0],this.mAccelerometerAvg[1], this.mAccelerometerAvg[2]));
-        accelerometerData.put("Minimum", Arrays.asList(this.mAccelerometerMin[0],this.mAccelerometerMin[1], this.mAccelerometerMin[2]));
-        accelerometerData.put("Maximum", Arrays.asList(this.mAccelerometerMax[0],this.mAccelerometerMax[1], this.mAccelerometerMax[2]));
-        accelerometerData.put("Standard Deviation", Arrays.asList(this.mAccelerometerStandardDev[0],this.mAccelerometerStandardDev[1], this.mAccelerometerStandardDev[2]));
+        accelerometerData.put("Bias", this.mAccelerometerBias);
+        accelerometerData.put("Average", this.mAccelerometerAvg);
+        accelerometerData.put("Minimum", this.mAccelerometerMin);
+        accelerometerData.put("Maximum", this.mAccelerometerMax);
+        accelerometerData.put("Standard Deviation", this.mAccelerometerStandardDev);
 
         docData.put("Device Data", deviceData);
         docData.put("Accelerometer Data", accelerometerData);
@@ -156,18 +133,16 @@ public class SensorFingerprint implements Parcelable {
         } else {
             weight += 1.0f;
         }
-        // Noise
-        weight += diffWithAbs("Noise", this.mAccelerometerNoise[2], o.getSensorNoise()[2]);
         // Minimum
-        weight += diffWithAbs("Minimum", this.mAccelerometerMin[2], o.getAccelerometerMin()[2]);
+        weight += diffWithAbs("Minimum", this.mAccelerometerMin, o.getAccelerometerMin());
         // Maximum
-        weight += diffWithAbs("Maximum", this.mAccelerometerMax[2], o.getAccelerometerMax()[2]);
+        weight += diffWithAbs("Maximum", this.mAccelerometerMax, o.getAccelerometerMax());
         // Bias
-        weight += diffWithAbs("Bias", this.mAccelerometerBias[2], o.getSensorRawBias()[2]);
+        weight += diffWithAbs("Bias", this.mAccelerometerBias, o.getSensorRawBias());
         // Standard Deviation
-        weight += diffWithAbs("Standard Deviation", this.mAccelerometerStandardDev[2], o.getAccelerometerStandardDev()[2]);
+        weight += diffWithAbs("Standard Deviation", this.mAccelerometerStandardDev, o.getAccelerometerStandardDev());
         // Average
-        weight += diffWithAbs("Average", this.mAccelerometerAvg[2], o.getAccelerometerAvg()[2]);
+        weight += diffWithAbs("Average", this.mAccelerometerAvg, o.getAccelerometerAvg());
         // Sensitivity
         weight += diffWithAbs("Sensitivity", this.mAccelerometerSensitivity, o.getSensorSensitivity());
         // Linearity
@@ -203,14 +178,6 @@ public class SensorFingerprint implements Parcelable {
         this.mAccelerometerVendor = mSensorVendor;
     }
 
-    public float[] getSensorNoise() {
-        return mAccelerometerNoise;
-    }
-
-    public void setSensorNoise(float[] mSensorNoise) {
-        this.mAccelerometerNoise = mSensorNoise;
-    }
-
     public float getSensorSensitivity() {
         return mAccelerometerSensitivity;
     }
@@ -227,11 +194,11 @@ public class SensorFingerprint implements Parcelable {
         this.mAccelerometerLinearity = mSensorLinearity;
     }
 
-    public float[] getSensorRawBias() {
+    public float getSensorRawBias() {
         return mAccelerometerBias;
     }
 
-    public void setSensorRawBias(float[] mSensorRawBias) {
+    public void setSensorRawBias(float mSensorRawBias) {
         this.mAccelerometerBias = mSensorRawBias;
     }
 
@@ -252,35 +219,35 @@ public class SensorFingerprint implements Parcelable {
         this.mDeviceMfg = mDeviceMfg;
     }
 
-    public float[] getAccelerometerAvg() {
+    public float getAccelerometerAvg() {
         return mAccelerometerAvg;
     }
 
-    public void setAccelerometerAvg(float[] mAccelerometerAvg) {
+    public void setAccelerometerAvg(float mAccelerometerAvg) {
         this.mAccelerometerAvg = mAccelerometerAvg;
     }
 
-    public float[] getAccelerometerMin() {
+    public float getAccelerometerMin() {
         return mAccelerometerMin;
     }
 
-    public void setAccelerometerMin(float[] mAccelerometerMin) {
+    public void setAccelerometerMin(float mAccelerometerMin) {
         this.mAccelerometerMin = mAccelerometerMin;
     }
 
-    public float[] getAccelerometerMax() {
+    public float getAccelerometerMax() {
         return mAccelerometerMax;
     }
 
-    public void setAccelerometerMax(float[] mAccelerometerMax) {
+    public void setAccelerometerMax(float mAccelerometerMax) {
         this.mAccelerometerMax = mAccelerometerMax;
     }
 
-    public float[] getAccelerometerStandardDev() {
+    public float getAccelerometerStandardDev() {
         return mAccelerometerStandardDev;
     }
 
-    public void setAccelerometerStandardDev(float[] mAccelerometerStandardDev) {
+    public void setAccelerometerStandardDev(float mAccelerometerStandardDev) {
         this.mAccelerometerStandardDev = mAccelerometerStandardDev;
     }
 
@@ -294,12 +261,11 @@ public class SensorFingerprint implements Parcelable {
                 "AccelerometerVendor\n" + mAccelerometerVendor + '\n' +
                 "AccelerometerSensitivity\n" + mAccelerometerSensitivity + '\n' +
                 "AccelerometerLinearity\n" + mAccelerometerLinearity + '\n' +
-                "AccelerometerNoise\n" + mAccelerometerNoise[2] + '\n' +
-                "AccelerometerBias\n" + mAccelerometerBias[2] + '\n' +
-                "AccelerometerAvg\n" + mAccelerometerAvg[2] + '\n' +
-                "AccelerometerMin\n" + mAccelerometerMin[2] + '\n' +
-                "AccelerometerMax\n" + mAccelerometerMax[2] + '\n' +
-                "AccelerometerStandardDev\n" + mAccelerometerStandardDev[2];
+                "AccelerometerBias\n" + mAccelerometerBias + '\n' +
+                "AccelerometerAvg\n" + mAccelerometerAvg + '\n' +
+                "AccelerometerMin\n" + mAccelerometerMin + '\n' +
+                "AccelerometerMax\n" + mAccelerometerMax + '\n' +
+                "AccelerometerStandardDev\n" + mAccelerometerStandardDev;
     }
 
     @Override
@@ -315,13 +281,12 @@ public class SensorFingerprint implements Parcelable {
         // Accelerometer Data
         dest.writeString(mAccelerometerModel);
         dest.writeString(mAccelerometerVendor);
-        dest.writeFloatArray(mAccelerometerNoise);
         dest.writeFloat(mAccelerometerSensitivity);
         dest.writeFloat(mAccelerometerLinearity);
-        dest.writeFloatArray(mAccelerometerBias);
-        dest.writeFloatArray(mAccelerometerAvg);
-        dest.writeFloatArray(mAccelerometerMin);
-        dest.writeFloatArray(mAccelerometerMax);
-        dest.writeFloatArray(mAccelerometerStandardDev);
+        dest.writeFloat(mAccelerometerBias);
+        dest.writeFloat(mAccelerometerAvg);
+        dest.writeFloat(mAccelerometerMin);
+        dest.writeFloat(mAccelerometerMax);
+        dest.writeFloat(mAccelerometerStandardDev);
     }
 }

@@ -1,7 +1,5 @@
 package com.oscarcasarezruiz.sensorfingerprinting.presenter;
 
-import com.oscarcasarezruiz.sensorfingerprinting.models.SensorInfo;
-
 public class SensorDataActivityPresenter {
 
     private View mView;
